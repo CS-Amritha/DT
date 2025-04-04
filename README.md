@@ -15,7 +15,9 @@ Project Structure
 ├── presentation          # Presentation Phase I
 ├── models                # Two models in .pkl format
 ├── src                   # Source code directory
-│── archive               # Past work (code, datasets, models)
+│── test                  # Python and bash shell script to test the model
+|── archive               # Past work (code, datasets, models)
+|
 └── README.md             # This file
 ```
 Problem Statement ❓ - Phase I
