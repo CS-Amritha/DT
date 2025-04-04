@@ -10,14 +10,12 @@ B.Tech Computer Science (Cyber Security)
 ```
 Project Structure
 
-├── dataset               # Contains all the .csv data generated using our script
+├── dataset               # Contains the .csv data generated using our script
 ├── docs                  # Documentation.md
 ├── presentation          # Presentation Phase I
-├── models                # Two models in .h5 format
+├── models                # Two models in .pkl format
 ├── src                   # Source code directory
-│   ├── data_collection   # Scripts used to generate data
-│   ├── live_capture_data # Script for live data capture & storage
-│   ├── model_training    # Scripts used to train the model
+│── archive               # Past work (code, datasets, models)
 └── README.md             # This file
 ```
 Problem Statement ❓ - Phase I
