@@ -1,3 +1,9 @@
+numpy
+scikit-learn
+imbalanced-learn
+shap
+matplotlib
+joblib
 kubernetes==28.1.0
 pandas==2.1.4
 requests==2.31.0
