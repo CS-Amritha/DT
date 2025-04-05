@@ -142,13 +142,12 @@ def train_random_forest(df):
         'actual_label': label_encoder.inverse_transform(y_test),
         'predicted_label': label_encoder.inverse_transform(y_pred)
     })
-    # [Previous code remains the same until the predictions section...]
+
 
     print("\nSample Predictions with Pod Details (Sorted by Pod and Time):")
     print(results.sort_values(['pod', 'timestamp']).head(10))
 
-    # ===== ADD THIS SECTION =====
-    # Save model artifacts using joblib (atomic write pattern)
+
     import tempfile
     import os
     
@@ -157,9 +156,9 @@ def train_random_forest(df):
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             try:
                 joblib.dump(obj, tmp.name)
-                # Verify the file can be loaded
+
                 _ = joblib.load(tmp.name)
-                # Atomic rename
+
                 os.replace(tmp.name, filename)
                 print(f"✅ Saved {filename} ({os.path.getsize(filename)} bytes)")
             except Exception as e:
@@ -175,7 +174,7 @@ def train_random_forest(df):
     except Exception as e:
         print(f"\n❌ Failed to save artifacts: {str(e)}")
         raise
-    # ===== END OF ADDED SECTION =====
+
 
     return rf_classifier, scaler, label_encoder
 
