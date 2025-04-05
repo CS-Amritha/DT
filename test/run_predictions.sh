@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Run predictions on CSV files
-# Usage: ./run_predictions.sh <input_csv> [--no-labels]
 
 # Set error handling
 set -euo pipefail
@@ -25,7 +23,7 @@ for file in "${required_files[@]}"; do
         echo "Error: Required file '$file' not found in current directory"
         exit 1
     fi
-done  # Fixed: removed the semicolon before done
+done  
 
 # Validate input
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
@@ -36,7 +34,7 @@ if [ $# -lt 1 ] || [ $# -gt 2 ]; then
 fi
 
 input_csv="$1"
-shift  # Remove the first argument so we can check the remaining ones
+shift  
 
 # Handle optional --no-labels flag
 no_labels=false
