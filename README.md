@@ -20,6 +20,49 @@ Project Structure
 |
 └── README.md             # This file
 ```
+
+🧠 DT - Model Testing Instructions
+---
+This repository contains the codebase and scripts for testing our model submission for the hackathon.
+
+
+🚀 Quick Start: How to Test the Model
+---
+Follow these steps to clone the repository, install dependencies, and run the model on the provided test data.
+
+
+🔧 Step 1: Clone the Repository
+---
+Clone this repository using Git and move into the project directory:
+
+```bash
+git clone https://github.com/CS-Amritha/DT.git
+cd DT
+```
+📦 Step 2: Install Python Dependencies
+---
+Install all required Python packages using pip. Make sure Python 3.8+ is installed.
+
+```bash
+pip install -r requirements.txt
+```
+▶️ Step 3: Run the Prediction Script
+---
+Navigate to the test folder and run the run_predictions.sh script using the provided test CSV file.
+
+```bash
+cd test
+bash run_predictions.sh ../data/test_data.csv
+```
+
+📌 Notes
+---
+
+- After prediction, an output CSV file with predicted results will be generated in the same data/ directory.
+- The model’s accuracy will be printed directly in the terminal after the script runs.
+
+
+
 Problem Statement ❓ - Phase I
 ---
 Kubernetes clusters can encounter failures such as pod crashes, resource bottlenecks, and network issues. The
