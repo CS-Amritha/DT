@@ -7,9 +7,9 @@ from pathlib import Path
 def load_models():
     """Load all model artifacts using joblib"""
     try:
-        model = joblib.load('../model/random_forest_model.pkl')
-        scaler = joblib.load('../model/scaler.pkl')
-        label_encoder = joblib.load('../model/label_encoder.pkl')
+        model = joblib.load('../models/random_forest_model.pkl')
+        scaler = joblib.load('../models/scaler.pkl')
+        label_encoder = joblib.load('../models/label_encoder.pkl')
         return model, scaler, label_encoder
     except Exception as e:
         print(f"Error loading models: {str(e)}")
