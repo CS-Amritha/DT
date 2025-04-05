@@ -180,6 +180,6 @@ def train_random_forest(df):
     return rf_classifier, scaler, label_encoder
 
 if __name__ == "__main__":
-    df = pd.read_csv('labeled_k8s_metrics.csv')
+    df = pd.read_csv('../../data/labeled_k8s_metrics.csv')
     print("Data loaded successfully. Shape:", df.shape)
     model, scaler , label_encoder = train_random_forest(df)
