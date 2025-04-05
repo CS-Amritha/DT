@@ -45,7 +45,6 @@ def main():
     has_labels = '--no-labels' not in sys.argv
     output_file = None
 
-    # Optional --output flag
     if '--output' in sys.argv:
         try:
             output_index = sys.argv.index('--output') + 1
@@ -97,7 +96,6 @@ def main():
         sys.exit(1)
     
     # Save results
-   
     results = df.copy()
     results['predicted_label'] = pred_labels
     for i, cls in enumerate(label_encoder.classes_):
