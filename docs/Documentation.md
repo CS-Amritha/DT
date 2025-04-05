@@ -152,57 +152,91 @@ We explored multiple machine learning models to predict Kubernetes failures, foc
   3. Actionable recommendations with confidence scores.
   4. Notifications via Slack or email.
   5. Option to automatically apply recommended changes (with user approval).
+ 
+  **Date:** 23.03.2025
+
+
+---
+## **5. Post-March 2025 Refinements**
+
+After March 23, 2025, we shifted our focus to pod-only error prediction, retaining node and deployment data for context, and adapted our modeling approach accordingly.
+
+### **Chaos Engineering Exploration:**
+- **Chaos Mesh and Litmus Chaos:**
+  - Explored these tools to inject failures (e.g., pod crashes, network issues).
+  - Effective but complex for custom scenarios.
+- **Custom Error Generation:**
+  - Found crashing our own app and pods simpler for tailored errors (e.g., OOMKilled, CrashLoopBackOff).
+  - Enhanced data relevance for pod predictions.
+
+### **Transition to Random Forest:**
+- **Why Random Forest?**
+  - Abandoned time-series forecasting (e.g., GRU) because it required a separate model per pod, which was impractical for monitoring numerous pods. Additionally, conflicting behaviors at a single timestamp (e.g., high CPU vs. normal memory) could cancel out, reducing predictive clarity.
+  - Shifted to Random Forest for its ability to handle tabular data holistically, achieving 0.94 accuracy.
+
+### **Model Integration into Kind Cluster:**
+- **Approach:**
+  - Packaged the Random Forest model as a Docker container with dependencies (e.g., scikit-learn, pandas).
+  - Created a Kubernetes deployment YAML to run the container in a Kind cluster.
+  - Configured a service to expose the model’s prediction endpoint.
+  - Integrated with the live data pipeline (PostgreSQL) via a sidecar container that fetches real-time pod metrics and feeds them to the model.
+  - Added a ConfigMap for model parameters and a PersistentVolumeClaim for storing predictions.
 
 ---
 
-## **6. Deliverables**
+## **6. Additional Work**
 
-1. **Trained Machine Learning Model:**
-   - A GRU-based model capable of predicting Kubernetes failures (e.g., node/pod failures, resource exhaustion, network issues).
+### **Live Data Capture:**
+- Installed PostgreSQL to store real-time metrics and logs.
+- Developed a script to scrape live data from Kubernetes clusters and store it in the database.
+- Separated data into three tables: `nodes`, `pods`, and `deployments`.
+
+### **Use Case Development:**
+- Defined a use case leveraging a **Large Language Model (LLM)** for automated incident response.
+- **Key Features:**
+  1. Real-time monitoring of Kubernetes workloads.
+  2. Root cause analysis (memory leaks, misconfigurations).
+  3. Actionable recommendations with confidence scores.
+  4. Notifications via Slack or email.
+  5. Option to automatically apply recommended changes (with user approval).
+
+---
+
+## **7. Deliverables (Updated)**
+
+1. **Trained Model:**
+   - Random Forest model predicting pod failures with 0.94 accuracy, deployed in Kind.
 
 2. **Codebase:**
-   - Functional Python scripts for data collection, model training, and live data scraping.
-   - Uploaded to GitHub for version control and collaboration.
+   - Scripts for data generation, model training, and cluster integration, hosted on GitHub.
 
 3. **Documentation:**
-   - This document provides a detailed explanation of our approach, key metrics, and model development process.
-  
+   - Updated to reflect pod focus, Random Forest shift, and Kind integration.
+
 ### **Learnings:**
-1. **Importance of Realistic Data:**
-   - Real-world data with proper labelling is critical for model performance.
-
-2. **Iterative Development:**
-   - Continuous improvement of scripts and models is essential.
-   - Collaboration and regular code reviews helped identify and fix issues early.
-
-3. **Integration with Kubernetes:**
-   - Understanding Kubernetes internals and using tools like Prometheus and `kubectl` is crucial for effective data collection.
-     
----
-## **7. Next Steps**
-
-1. **Refine Data Generation:**
-   - Optimize the script to generate more realistic and diverse failure scenarios.
-   - Improve labelling accuracy based on real-world error patterns.
-
-2. **Enhance Model Performance:**
-   - Train the GRU model on a larger and more diverse dataset.
-   - Experiment with other anomaly detection techniques.
-
-3. **Real-Time Prediction:**
-   - Integrate the trained model with the live data capture pipeline.
-   - Implement real-time failure prediction and alerting.
-
-4. **Kubernetes Integration:**
-   - Package the solution in Kubernetes for seamless deployment and scalability.
-
-
-
-
-Phase 1 of the project laid a strong foundation for predicting Kubernetes failures. Over the course of 20 days, our team dedicated significant time and effort to understanding Kubernetes, developing a data generation pipeline, and exploring machine learning models. While challenges remain, the team is confident in the approach and excited to move forward with refining the solution in the subsequent phase.
+1. Time-series models were impractical for pod-level monitoring; tabular models like Random Forest are more effective.
+2. Custom errors and chaos engineering improve dataset quality.
+3. Cluster integration enhances real-world applicability.
 
 ---
 
-**Date:** 23.03.2025
+## **8. Next Steps**
+
+1. **Data Enhancement:**
+   - Expand custom error scenarios and refine node/deployment context.
+
+2. **Model Improvement:**
+   - Optimize Random Forest hyperparameters; explore ensemble methods.
+
+3. **Real-Time Refinement:**
+   - Enhance Kind integration for scalability and alerting.
+
+---
+
+Phase 1 of the project laid a strong foundation for predicting Kubernetes failures. Over the course of 20 days, our team dedicated significant time and effort to understanding Kubernetes, developing a data generation pipeline, and exploring machine learning models. Post-March 2025 refinements further sharpened our focus on pod-level predictions, leveraging Random Forest and Kind integration. While challenges remain, the team is confident in the approach and excited to move forward with refining the solution in the subsequent phase.
+
+---
+
+**Date:** 04.04.2025
 
 
