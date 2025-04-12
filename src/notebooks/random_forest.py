@@ -160,7 +160,7 @@ def train_random_forest(df):
                 _ = joblib.load(tmp.name)
 
                 os.replace(tmp.name, filename)
-                print(f"✅ Saved {filename} ({os.path.getsize(filename)} bytes)")
+                print(f"Saved {filename} ({os.path.getsize(filename)} bytes)")
             except Exception as e:
                 if os.path.exists(tmp.name):
                     os.unlink(tmp.name)
@@ -172,7 +172,7 @@ def train_random_forest(df):
         safe_joblib_dump(label_encoder, 'label_encoder.pkl')
         print("\nAll model artifacts saved successfully!")
     except Exception as e:
-        print(f"\n❌ Failed to save artifacts: {str(e)}")
+        print(f"\nFailed to save artifacts: {str(e)}")
         raise
 
 

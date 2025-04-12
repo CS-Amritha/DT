@@ -1,41 +1,43 @@
-.PHONY: start-db stop-db restart-db rm-db logs-db \
-        start-app stop-app restart-app rm-app \
-        up all down prune logs
+.PHONY: start-db stop-db rm-db logs-db \
+        start-app start-api up down prune
 
 COMPOSE_FILE=docker/docker-compose.yaml
 
-## MongoDB commands ##
+## MongoDB ##
 start-db:
 	docker-compose -f $(COMPOSE_FILE) up -d mongo
 
-stop-db:
-	docker-compose -f $(COMPOSE_FILE) stop mongo
+start-mongo-express:
+	docker-compose -f $(COMPOSE_FILE) up -d mongo-express
 
-restart-db: stop-db start-db
+stop-db:
+	docker-compose -f $(COMPOSE_FILE) stop
 
 rm-db:
-	docker-compose -f $(COMPOSE_FILE) rm -sfv mongo
+	docker-compose -f $(COMPOSE_FILE) rm -sfv
 
 logs-db:
-	docker-compose -f $(COMPOSE_FILE) logs -f mongo
+	docker-compose -f $(COMPOSE_FILE) logs -f
 
-## App commands ##
+## App ##
 start-app:
 	python3 src/main.py
 
-stop-app:
-	pkill -f "python3 src/main.py" || true
-
-restart-app: stop-app start-app
-
-rm-app: stop-app 
+## API ##
+start-api:
+	python3 -m uvicorn src.api.server:app --reload --port 8000 & echo $$! > .api.pid
 
 ## Combined ##
-up: start-db start-app
+up:
+	$(MAKE) start-db
+	sleep 3
+	$(MAKE) start-mongo-express
+	$(MAKE) -j2 start-api start-app
 
-down: stop-app stop-db
+down:
+	pkill -f "src/main.py" || true
+	pkill -f "uvicorn src.api.server:app" || true
+	docker-compose -f $(COMPOSE_FILE) stop
 
 prune: down
 	docker-compose -f $(COMPOSE_FILE) down -v --remove-orphans
-
-logs: logs-db

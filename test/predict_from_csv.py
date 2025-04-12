@@ -1,8 +1,10 @@
 import pandas as pd
+from src.config.settings import POD_ERROR_TYPES
 import numpy as np
 import joblib
 import sys
 from pathlib import Path
+from sklearn.metrics import classification_report
 
 def load_models():
     """Load all model artifacts using joblib"""
@@ -20,9 +22,7 @@ def prepare_data(df, feature_cols):
     # Ensure all required columns exist
     for col in feature_cols:
         if col not in df.columns:
-            if col in ['CPU Throttling', 'High CPU Usage', 'OOMKilled (Out of Memory)',
-                     'CrashLoopBackOff', 'ContainerNotReady', 'PodUnschedulable',
-                     'NodePressure', 'ImagePullFailure']:
+            if col in POD_ERROR_TYPES:
                 df[col] = 0
             else:
                 df[col] = 0.0
@@ -108,16 +108,12 @@ def main():
     print(f"Predictions saved to {output_file}")
     
     if has_labels:
-        from sklearn.metrics import classification_report
         print("\nEvaluation Metrics:")
         print(classification_report(
             label_encoder.transform(y_true),
             y_pred,
             target_names=label_encoder.classes_
         ))
-
-       
-
 
 if __name__ == "__main__":
     main()

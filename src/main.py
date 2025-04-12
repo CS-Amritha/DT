@@ -27,6 +27,9 @@ from analyzers.deployment_analyzer import check_deployment_errors, add_error_fla
 from storage.csv_exporter import CSVExporter
 from storage.mongo_exporter import MongoExporter
 
+# Predictor
+from predictor.predictor import predict_for_document
+
 # Settings
 from config.settings import STORAGE_BACKEND, POLLING_INTERVAL
 
@@ -70,6 +73,9 @@ def main():
                 pod_events = filter_events_for_pod(new_events, namespace, pod_name)
                 pod_errors = check_pod_errors(pod_metric, pod_events)
                 combined_metric = add_pod_error_flags(combined_metric, pod_errors)
+
+                #Predict and append (Comment this line whenm capturing data for training)
+                combined_metric = predict_for_document(combined_metric)
                 combined_data_pods.append(combined_metric)
 
             # Process node and deployment metrics
