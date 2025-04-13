@@ -12,7 +12,7 @@ MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "k8s_monitoring")
 STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "csv").lower()
 
 # Polling Interval
-POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", 60))
+POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", 5))
 
 
 """
@@ -25,8 +25,6 @@ K8S_CONTEXT = "kind-clusterbusters"
 # Prometheus settings
 PROMETHEUS_URL = "http://localhost:9090"
 
-# Application settings
-POLLING_INTERVAL = 5  # seconds
 
 # Thresholds
 THRESHOLDS = {

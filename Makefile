@@ -4,17 +4,30 @@
 COMPOSE_FILE=docker/docker-compose.yaml
 
 ## K8s ##
-deplo-containers:
+deploy-containers:
 	@echo "Setting up the demo environment..."
-	./chaos_setup.sh
+	./litmus_chaos/deployments.sh
 
 delete-cluster:
 	kind delete cluster --name clusterbusters
 
 litmus-access:
-	kubectl apply -f chaos/pods/devtrails-experiments-litmus-chaos-enable.yml
+	kubectl apply -f litmus_chaos/access
 	kubectl patch configmap subscriber-config -n litmus --type merge -p '{"data":{"SERVER_ADDR":"http://chaos-litmus-frontend-service.litmus.svc.cluster.local:9091/api/query"}}'
-	
+
+start-port-forward:
+	@bash -c '\
+	kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090 & \
+	sleep 5; \
+	kubectl port-forward -n litmus service/chaos-litmus-frontend-service 9091:9091 & \
+	wait'
+	@echo "Port-forwarding started. Access Prometheus at http://localhost:9090 and Litmus at http://localhost:9091"
+
+kill-port-forwards:
+	@echo "Killing all Kubernetes port-forward processes..."
+	@ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $$2}' | xargs -r kill -9
+	@echo "All port-forward processes killed."
+
 ## MongoDB ##
 start-db:
 	docker-compose -f $(COMPOSE_FILE) up -d mongo
@@ -31,10 +44,6 @@ rm-db:
 logs-db:
 	docker-compose -f $(COMPOSE_FILE) logs -f
 
-kill-port-forwards:
-	@echo "Killing all Kubernetes port-forward processes..."
-	@ps aux | grep 'kubectl port-forward' | grep -v grep | awk '{print $$2}' | xargs -r kill -9
-	@echo "All port-forward processes killed."
 
 ## App ##
 start-app:

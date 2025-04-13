@@ -1,7 +1,7 @@
 kind: Workflow
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: pod-chaos-bad
+  name: pod-bad-chaos
   namespace: litmus
   labels:
     infra_id: 042cd914-8485-4a6c-bebc-1c150876bc47
