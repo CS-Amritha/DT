@@ -6,9 +6,11 @@
 # Ignore IDE and editor files
 .vscode/
 .idea/
+.DS_Store
 *.swp
 *.swo
 *.pid
 
 # ignore test models
 data/k8s_chaos_data_test_predictions.csv
+frontend/node_modules/

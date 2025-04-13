@@ -55,7 +55,7 @@ class ExplainRequest(BaseModel):
     prob_bad: float
     prob_good: float
 
-@router.post("/")
+@router.post("")
 async def explain(data: ExplainRequest):
     try:
         explanation = explain_prediction(data.dict())
