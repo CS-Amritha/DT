@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: clusterbusters
+      MONGO_INITDB_ROOT_PASSWORD: gwdevtrails
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: clusterbusters
+      ME_CONFIG_MONGODB_ADMINPASSWORD: gwdevtrails
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    depends_on:
+      - mongo
+
+volumes:
+  mongodata:

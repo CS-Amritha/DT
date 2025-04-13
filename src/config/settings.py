@@ -1,3 +1,20 @@
+import os
+from dotenv import load_dotenv
+
+# Load .env from project root or wherever it's located
+load_dotenv()
+
+# MongoDB Settings
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://clusterbusters:gwdevtrails@localhost:27017/")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "k8s_monitoring")
+
+# Storage Backend
+STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "csv").lower()
+
+# Polling Interval
+POLLING_INTERVAL = int(os.getenv("POLLING_INTERVAL", 5))
+
+
 """
 Configuration settings for the Kubernetes monitoring application.
 """
@@ -8,8 +25,6 @@ K8S_CONTEXT = "kind-clusterbusters"
 # Prometheus settings
 PROMETHEUS_URL = "http://localhost:9090"
 
-# Application settings
-POLLING_INTERVAL = 5  # seconds
 
 # Thresholds
 THRESHOLDS = {
