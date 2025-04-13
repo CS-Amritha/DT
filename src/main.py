@@ -75,7 +75,7 @@ def main():
                 combined_metric = add_pod_error_flags(combined_metric, pod_errors)
 
                 #Predict and append (Comment this line whenm capturing data for training)
-                #combined_metric = predict_for_document(combined_metric)
+                combined_metric = predict_for_document(combined_metric)
                 combined_data_pods.append(combined_metric)
 
             # Process node and deployment metrics

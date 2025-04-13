@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -11,6 +9,8 @@ import shap
 import matplotlib.pyplot as plt
 from collections import Counter
 import joblib
+import os
+import pandas as pd
 
 
 def train_random_forest(df):
@@ -179,6 +179,8 @@ def train_random_forest(df):
     return rf_classifier, scaler, label_encoder
 
 if __name__ == "__main__":
-    df = pd.read_csv('../../data/labeled_k8s_metrics.csv')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(script_dir, '../../data/k8s_chaos_data.csv')
+    df = pd.read_csv(data_path)
     print("Data loaded successfully. Shape:", df.shape)
     model, scaler , label_encoder = train_random_forest(df)
