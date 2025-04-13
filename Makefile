@@ -54,6 +54,9 @@ start-api:
 	python3 -m uvicorn src.api.server:app --reload --port 8000 & echo $$! > .api.pid
 
 ## Combined ##
+FRONTEND_DIR=frontend
+FRONTEND_LOG=frontend.log
+
 up:
 	$(MAKE) start-db
 	sleep 3
@@ -61,11 +64,13 @@ up:
 	sleep 3
 	./setup.sh
 	$(MAKE) -j2 start-api start-app
+	cd $(FRONTEND_DIR) && nohup npm run dev > ../$(FRONTEND_LOG) 2>&1 & echo $$! > ../frontend.pid
 
 down: kill-port-forwards
 	pkill -f "src/main.py" || true
 	pkill -f "uvicorn src.api.server:app" || true
 	docker-compose -f $(COMPOSE_FILE) stop
+	-[ -f frontend.pid ] && kill `cat frontend.pid` && rm frontend.pid
 
 prune: down
 	docker-compose -f $(COMPOSE_FILE) down -v --remove-orphans
