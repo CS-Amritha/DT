@@ -79,7 +79,31 @@ historical and real-time cluster metrics.
 Phase I Progress Bar 
 ---  
 ### 📌 Data Collection 
-🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜  70%   
+🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90%   
+
+Our primary focus is on predicting pod errors within Kubernetes clusters. To build a robust dataset, we employed **[LitmusChaos](https://docs.litmuschaos.io/docs/introduction/what-is-litmus)** — an open-source chaos engineering platform tailored for cloud-native environments. It enables the simulation of various failure scenarios in a controlled and systematic way, helping us study system resilience under stress.
+
+## Workflow Overview
+
+- **Namespace Segmentation**  
+  We structured our Kubernetes cluster into multiple namespaces to isolate different testing environments, ensuring cleaner data collection and minimal cross-interference.
+
+- **Chaos Workflows**  
+  Using LitmusChaos, we designed workflows that inject specific types of faults — such as pod crashes, resource exhaustion, and network partitioning — to simulate real-world failure conditions.
+
+- **Pod Classification**  
+  Based on the behavior observed during chaos injection:
+  - **Good Pods**: Stable and functioning normally.
+  - **Alert Pods**: Showing early signs of resource stress or potential failure.
+  - **Bad Pods**: Stressed or deliberately crashed during chaos experiments.
+
+- **Data Labeling & Metrics Collection**  
+  Using Prometheus, we monitored and gathered pod-level metrics throughout the chaos experiments. Each data instance was labeled accordingly (`Good`, `Alert`, or `Bad`).
+
+- **Dataset Compilation**  
+  All labeled metrics were compiled into structured `.csv` files and stored in our dataset directory. This dataset forms the foundation for training and validating our machine learning models focused on predictive pod failure detection.
+
+---
 
 ### 📌 ML Model 
 🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜  70% 
@@ -105,13 +129,13 @@ to mitigate potential failures in the Kubernetes cluster.
 ## Tech Stack & Tools 🛠️
 
   <p>
-   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" alt="Grafana" width="60"/>
+  <img src="https://github.com/litmuschaos/litmus/raw/master/images/litmus-logo-dark-bg-stacked.png" alt="LitmusChaos" width="75"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" alt="Grafana" width="60"/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" alt="Prometheus" width="60"/>
-  <img src="https://avatars.githubusercontent.com/u/59082378?v=4" alt="Chaos Mesh" width="60"/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" width="60"/>
   <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Bash_Logo_Colored.svg" alt="Shell Scripts" width="60"/>
   <img src="https://kind.sigs.k8s.io/logo/logo.png" alt="Kubernetes in Docker (kind)" width="75"/>
-  <img src="https://avatars.githubusercontent.com/u/7739233?s=280&v=4" alt="Chaos Mesh" width="75"/>
+  
 
   </p>
 
