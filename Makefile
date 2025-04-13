@@ -63,6 +63,8 @@ up:
 	$(MAKE) start-mongo-express
 	sleep 3
 	./setup.sh
+	sleep 5
+	./litmus_chaos/deployments.sh
 	$(MAKE) -j2 start-api start-app
 	cd $(FRONTEND_DIR) && nohup npm run dev > ../$(FRONTEND_LOG) 2>&1 & echo $$! > ../frontend.pid
 
