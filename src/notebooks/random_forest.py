@@ -4,29 +4,22 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from imblearn.under_sampling import RandomUnderSampler
 import shap
 import matplotlib.pyplot as plt
-from collections import Counter
+import seaborn as sns
 import joblib
 import os
-import pandas as pd
+import tempfile
 
 
 def train_random_forest(df):
-    # Rename target column to match script expectation
+    os.makedirs("models", exist_ok=True)
+
     df = df.rename(columns={'status_label': 'label'})
-
-    # Convert timestamp to datetime
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-
-    # Sort by pod and timestamp to ensure chronological order
     df = df.sort_values(['pod', 'timestamp'])
-
-    # Compute pod-specific time since first observation
     df['time_since_pod_start'] = df.groupby('pod')['timestamp'].transform(lambda x: (x - x.min()).dt.total_seconds())
 
-    # Updated feature columns to include additional dataset fields
     feature_cols = [
         'cpu_usage', 'cpu_limit', 'cpu_request',
         'memory_usage', 'memory_limit', 'memory_request', 'memory_rss',
@@ -40,125 +33,68 @@ def train_random_forest(df):
         'time_since_pod_start'
     ]
 
-    # Impute NaN values for all feature columns
-    for col in ['cpu_usage', 'cpu_limit', 'cpu_request', 'memory_usage',
-                'memory_limit', 'memory_request', 'memory_rss',
-                'network_receive_bytes', 'network_transmit_bytes', 'network_errors',
-                'disk_read_bytes', 'disk_write_bytes',
-                'pod_uptime_seconds', 'cpu_utilization_ratio',
-                'memory_utilization_ratio', 'time_since_pod_start']:
-        df[col] = df[col].fillna(df[col].mean())
+    # Impute missing features
+    for col in feature_cols:
+        if col not in df.columns:
+            df[col] = 0.0
+        df[col] = df[col].fillna(df[col].mean() if df[col].dtype != 'object' else 0)
 
-    # Impute with 0 for count-like or binary variables
-    for col in ['restarts', 'CPU Throttling', 'High CPU Usage',
-                'OOMKilled (Out of Memory)', 'CrashLoopBackOff', 'ContainerNotReady',
-                'PodUnschedulable', 'NodePressure', 'ImagePullFailure']:
-        df[col] = df[col].fillna(0)
-
-    # Verify no NaN values remain in feature_cols or label
-    print("NaN count in features after imputation:\n", df[feature_cols].isna().sum())
-    print("NaN count in label after imputation:", df['label'].isna().sum())
-
-    # Impute label with mode if NaN exists
-    if df['label'].isna().sum() > 0:
-        df['label'] = df['label'].fillna(df['label'].mode()[0])
-
-    print(f"Rows after processing: {df.shape[0]}")
-
-    # Encode the labels ('Bad', 'Alert', 'Good') to numerical values
+    # Encode label
+    df['label'] = df['label'].fillna(df['label'].mode()[0])
     label_encoder = LabelEncoder()
     df['encoded_label'] = label_encoder.fit_transform(df['label'])
 
     X = df[feature_cols]
     y = df['encoded_label']
 
-    # Split data, ensuring stratification by label
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
     train_idx = X_train.index
     test_idx = X_test.index
 
-    # Scale data
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Handle any remaining NaN in scaled data
-    X_train_scaled = np.nan_to_num(X_train_scaled, nan=0)
-    X_test_scaled = np.nan_to_num(X_test_scaled, nan=0)
-
-    # Dynamic sampling strategy for multi-class using undersampling
-    class_counts = Counter(y_train)
-    min_class_count = min(class_counts.values())
-    sampling_strategy = {cls: min_class_count for cls in class_counts}
-
-    # Apply undersampling
-    undersampler = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=42)
-    X_train_resampled, y_train_resampled = undersampler.fit_resample(X_train_scaled, y_train)
-
-    # Check resampled class distribution
-    print(f"Resampled class distribution: {dict(zip(*np.unique(y_train_resampled, return_counts=True)))}")
-
-    # Train Random Forest
     rf_classifier = RandomForestClassifier(
         n_estimators=50, max_depth=5, min_samples_split=10,
         random_state=42, n_jobs=-1
     )
-    rf_classifier.fit(X_train_resampled, y_train_resampled)
+    rf_classifier.fit(X_train_scaled, y_train)
 
-    # Cross-validation
-    scores = cross_val_score(rf_classifier, X_train_resampled, y_train_resampled, cv=5, scoring='f1_weighted')
+    scores = cross_val_score(rf_classifier, X_train_scaled, y_train, cv=5, scoring='f1_weighted')
     print(f"Cross-validation F1 scores: {scores.mean():.4f} (+/- {scores.std() * 2:.4f})")
 
-    # Evaluate on test data
     y_pred = rf_classifier.predict(X_test_scaled)
+    cm = confusion_matrix(y_test, y_pred)
+
     print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
-    print("\nConfusion Matrix:")
-    print(confusion_matrix(y_test, y_pred))
-    print(f"\nAccuracy: {accuracy_score(y_test, y_pred):.4f}")
+    print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
+    print("\nConfusion Matrix:\n", cm)
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
 
-    # Feature importance
-    feature_importance = pd.DataFrame({
-        'feature': feature_cols,
-        'importance': rf_classifier.feature_importances_
-    }).sort_values('importance', ascending=False)
-    print("\nFeature Importance:")
-    print(feature_importance)
-
-    # SHAP explainability
-    explainer = shap.TreeExplainer(rf_classifier)
-    shap_values = explainer.shap_values(X_test_scaled)
-    shap.summary_plot(shap_values, X_test, feature_names=feature_cols)
-    plt.savefig('shap_summary.png')  # Save SHAP plot
+    # Confusion Matrix Heatmap
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_)
+    plt.title("Confusion Matrix - Random Forest")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.savefig("models/confusion_matrix_rf.png", bbox_inches="tight")
     plt.close()
 
-    # Prediction results with metadata
-    results = pd.DataFrame({
-        'timestamp': df.loc[test_idx, 'timestamp'],
-        'namespace': df.loc[test_idx, 'namespace'],
-        'pod': df.loc[test_idx, 'pod'],
-        'node': df.loc[test_idx, 'node'],
-        'time_since_pod_start': df.loc[test_idx, 'time_since_pod_start'],
-        'actual_label': label_encoder.inverse_transform(y_test),
-        'predicted_label': label_encoder.inverse_transform(y_pred)
-    })
+    # SHAP Explainability
+    explainer = shap.TreeExplainer(rf_classifier)
+    shap_values = explainer.shap_values(X_test_scaled)
+    shap.summary_plot(shap_values, X_test, feature_names=feature_cols, show=False)
+    plt.savefig("models/shap_summary_rf.png", bbox_inches="tight")
+    plt.close()
 
-
-    print("\nSample Predictions with Pod Details (Sorted by Pod and Time):")
-    print(results.sort_values(['pod', 'timestamp']).head(10))
-
-
-    import tempfile
-    import os
-    
+    # Save artifacts
     def safe_joblib_dump(obj, filename):
-        """Safely save object with atomic write"""
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             try:
                 joblib.dump(obj, tmp.name)
-
                 _ = joblib.load(tmp.name)
-
                 os.replace(tmp.name, filename)
                 print(f"Saved {filename} ({os.path.getsize(filename)} bytes)")
             except Exception as e:
@@ -166,21 +102,16 @@ def train_random_forest(df):
                     os.unlink(tmp.name)
                 raise e
 
-    try:
-        safe_joblib_dump(rf_classifier, 'random_forest_model.pkl')
-        safe_joblib_dump(scaler, 'scaler.pkl')
-        safe_joblib_dump(label_encoder, 'label_encoder.pkl')
-        print("\nAll model artifacts saved successfully!")
-    except Exception as e:
-        print(f"\nFailed to save artifacts: {str(e)}")
-        raise
-
+    safe_joblib_dump(rf_classifier, "models/random_forest_model.pkl")
+    safe_joblib_dump(scaler, "models/scaler_rf.pkl")
+    safe_joblib_dump(label_encoder, "models/label_encoder_rf.pkl")
 
     return rf_classifier, scaler, label_encoder
+
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_path = os.path.join(script_dir, '../../data/k8s_chaos_data.csv')
     df = pd.read_csv(data_path)
     print("Data loaded successfully. Shape:", df.shape)
-    model, scaler , label_encoder = train_random_forest(df)
+    model, scaler, label_encoder = train_random_forest(df)

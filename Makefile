@@ -69,3 +69,9 @@ down: kill-port-forwards
 
 prune: down
 	docker-compose -f $(COMPOSE_FILE) down -v --remove-orphans
+
+
+## Models ##
+test-model:
+	./test/run_predictions.sh data/k8s_chaos_data_test.csv --model rf
+	./test/run_predictions.sh data/k8s_chaos_data_test.csv --model nn

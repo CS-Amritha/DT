@@ -32,13 +32,13 @@ FEATURE_COLS = [
 # Load model artifacts based on type
 if MODEL_TYPE == "nn":
     print("Using Neural Network model")
-    model = load_model(MODEL_PATH / "nn_model.keras")
+    model = load_model(MODEL_PATH / "neural_net_model.keras")
     scaler = joblib.load(MODEL_PATH / "scaler_nn.pkl")
     label_encoder = joblib.load(MODEL_PATH / "label_encoder_nn.pkl")
 else:
     print("Using Random Forest model")
     model = joblib.load(MODEL_PATH / "random_forest_model.pkl")
-    scaler = joblib.load(MODEL_PATH / "scaler.pkl")
+    scaler = joblib.load(MODEL_PATH / "scaler_rf.pkl")
     label_encoder = joblib.load(MODEL_PATH / "label_encoder.pkl")
 
 
