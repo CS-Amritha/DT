@@ -3,6 +3,18 @@
 
 COMPOSE_FILE=docker/docker-compose.yaml
 
+## K8s ##
+deplo-containers:
+	@echo "Setting up the demo environment..."
+	./chaos_setup.sh
+
+delete-cluster:
+	kind delete cluster --name clusterbusters
+
+litmus-access:
+	kubectl apply -f chaos/pods/devtrails-experiments-litmus-chaos-enable.yml
+	kubectl patch configmap subscriber-config -n litmus --type merge -p '{"data":{"SERVER_ADDR":"http://chaos-litmus-frontend-service.litmus.svc.cluster.local:9091/api/query"}}'
+	
 ## MongoDB ##
 start-db:
 	docker-compose -f $(COMPOSE_FILE) up -d mongo

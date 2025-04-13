@@ -186,3 +186,55 @@ echo "Access Prometheus UI: http://localhost:9090"
 echo ""
 echo "To stop port-forwarding:"
 echo "  kill $PROM_PID"
+
+helm repo add litmuschaos https://litmuschaos.github.io/litmus-helm/
+helm repo list
+
+kubectl create ns litmus --dry-run=client -o yaml | kubectl apply -f -
+
+helm install chaos litmuschaos/litmus --namespace=litmus \
+  --set portal.frontend.service.type=NodePort \
+  --set mongodb.image.registry=docker.io \
+  --set mongodb.image.repository=dlavrenuek/bitnami-mongodb-arm \
+  --set mongodb.image.tag=6.0.13
+
+# Wait for Litmus pods to be ready
+echo "Waiting for all pods in namespace 'litmus' to be ready..."
+ATTEMPTS=36  # 36 * 5s = 180 seconds
+SLEEP=5
+
+for ((i=1; i<=ATTEMPTS; i++)); do
+  NOT_READY=$(kubectl get pods -n litmus --no-headers | awk '
+  {
+    split($2, ready, "/");
+    if (ready[1] != ready[2] || ($3 != "Running" && $3 != "Completed")) {
+      print;
+    }
+  }' | wc -l)
+
+  if [ "$NOT_READY" -eq 0 ]; then
+    echo "All pods in 'litmus' are ready!"
+    break
+  fi
+
+  echo "Waiting for pods to be ready... ($i/$ATTEMPTS)"
+  sleep $SLEEP
+done
+
+# Final pod status summary
+echo "Final pod statuses in namespace 'litmus':"
+kubectl get pods -n litmus
+kubectl get svc -n litmus
+
+# Port-forward Litmus frontend
+echo "Starting port-forward for Litmus UI at http://localhost:9091 ..."
+nohup kubectl port-forward -n litmus service/chaos-litmus-frontend-service 9091:9091 > /dev/null 2>&1 &
+LITMUS_PID=$!
+
+ps aux | grep "kubectl port-forward" | grep -v grep
+
+echo ""
+echo "Access Litmus UI: http://localhost:9091"
+echo ""
+echo "To stop port-forwarding:"
+echo "  kill $LITMUS_PID"
