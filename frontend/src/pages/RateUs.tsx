@@ -6,14 +6,14 @@ import { MessageSquare, QrCode, Star } from 'lucide-react';
 
 const RateUs = () => {
   // Generate a QR code that points to a mailto link
-  const teamLeadEmail = "teamlead@devtrails.com"; // Replace with actual email
+  const teamLeadEmail = "amrithashyamofficial@gmail.com"; 
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=mailto:${teamLeadEmail}?subject=Kubeboom%20Feedback`;
   
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-kubernetes-purple mb-2">Rate Our Project</h1>
+          <h1 className="text-3xl font-bold text-kubernetes-purple mb-2">Feedback & Rate Our Project</h1>
           <p className="text-gray-600">
             We value your feedback! Scan the QR code below to send your thoughts directly to our team lead.
           </p>

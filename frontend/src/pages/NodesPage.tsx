@@ -36,8 +36,8 @@ const NodesPage: React.FC = () => {
         timeRange,
       });
       
-      setNodes(data);
-      setHasMore(data.length === pageSize);
+      setNodes(data.data);
+      setHasMore(data.skip + data.count < data.total);
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {

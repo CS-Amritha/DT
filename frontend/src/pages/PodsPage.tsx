@@ -41,8 +41,8 @@ const PodsPage: React.FC = () => {
         timeRange,
       });
       
-      setPods(data);
-      setHasMore(data.length === pageSize);
+      setPods(data.data);
+      setHasMore(data.skip + data.count < data.total);
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -63,7 +63,7 @@ const PodsPage: React.FC = () => {
     
     try {
       const result = await api.explainPod(podData);
-      setExplanation(result);
+      setExplanation(result.explanation);
     } catch (error) {
       console.error('Error explaining pod:', error);
       toast.error('Failed to get explanation');
@@ -93,7 +93,7 @@ const PodsPage: React.FC = () => {
     // Set up regular refresh interval
     refreshIntervalRef.current = setInterval(() => {
       fetchPods();
-    }, 2000);
+    }, 5000);
     
     return () => {
       if (refreshIntervalRef.current) {
