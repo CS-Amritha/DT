@@ -58,6 +58,7 @@ def prepare_document(doc):
 def predict_for_document(doc):
     """
     Predicts class and probabilities for a single input document using selected model.
+    Replaces NaNs with None to make the result JSON serializable.
     """
     try:
         X = prepare_document(doc)
@@ -76,7 +77,7 @@ def predict_for_document(doc):
         for i, cls in enumerate(label_encoder.classes_):
             doc[f"prob_{cls}"] = float(y_proba[i])
 
-        return doc
+        # Replace NaNs with None for JSON safety
+        return {k: (0 if pd.isna(v) else v) for k, v in doc.items()}
     except Exception as e:
-        doc["prediction_error"] = str(e)
-        return doc
+        return {"error": str(e)}

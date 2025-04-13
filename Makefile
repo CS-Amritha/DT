@@ -75,3 +75,8 @@ prune: down
 test-model:
 	./test/run_predictions.sh data/k8s_chaos_data_test.csv --model rf
 	./test/run_predictions.sh data/k8s_chaos_data_test.csv --model nn
+
+.PHONY: kill-api
+kill-api:
+	@echo "Terminating process on port 8000..."
+	@kill -9 $$(lsof -t -i:8000 -sTCP:LISTEN) 2>/dev/null || echo "No process found on port 8000."

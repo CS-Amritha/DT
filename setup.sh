@@ -192,11 +192,29 @@ helm repo list
 
 kubectl create ns litmus --dry-run=client -o yaml | kubectl apply -f -
 
-helm install chaos litmuschaos/litmus --namespace=litmus \
-  --set portal.frontend.service.type=NodePort \
-  --set mongodb.image.registry=docker.io \
-  --set mongodb.image.repository=dlavrenuek/bitnami-mongodb-arm \
-  --set mongodb.image.tag=6.0.13
+LITMUS_RELEASE_NAME="chaos"
+LITMUS_NAMESPACE="litmus"
+
+if helm list -n "$LITMUS_NAMESPACE" | grep -q "^$LITMUS_RELEASE_NAME"; then
+  if [ "$FORCE" = true ]; then
+    echo "Force flag detected: reinstalling Litmus..."
+    helm uninstall "$LITMUS_RELEASE_NAME" -n "$LITMUS_NAMESPACE"
+    sleep 5  # Give some time for the release to clear
+  else
+    echo "Litmus is already installed in namespace '$LITMUS_NAMESPACE'. Skipping installation."
+    SKIP_LITMUS_INSTALL=true
+  fi
+fi
+
+if [ "$SKIP_LITMUS_INSTALL" != true ]; then
+  echo "Installing Litmus in namespace '$LITMUS_NAMESPACE'..."
+  helm install "$LITMUS_RELEASE_NAME" litmuschaos/litmus --namespace="$LITMUS_NAMESPACE" \
+    --set portal.frontend.service.type=NodePort \
+    --set mongodb.image.registry=docker.io \
+    --set mongodb.image.repository=dlavrenuek/bitnami-mongodb-arm \
+    --set mongodb.image.tag=6.0.13
+  echo "Litmus installed successfully!"
+fi
 
 # Wait for Litmus pods to be ready
 echo "Waiting for all pods in namespace 'litmus' to be ready..."
@@ -204,16 +222,19 @@ ATTEMPTS=36  # 36 * 5s = 180 seconds
 SLEEP=5
 
 for ((i=1; i<=ATTEMPTS; i++)); do
-  NOT_READY=$(kubectl get pods -n litmus --no-headers | awk '
+  NOT_READY=$(kubectl get pods -n "$LITMUS_NAMESPACE" --no-headers | awk '
   {
     split($2, ready, "/");
-    if (ready[1] != ready[2] || ($3 != "Running" && $3 != "Completed")) {
+    status = $3;
+    if (ready[1] != ready[2] && status != "Completed") {
+      print;
+    } else if (status != "Running" && status != "Completed") {
       print;
     }
   }' | wc -l)
 
   if [ "$NOT_READY" -eq 0 ]; then
-    echo "All pods in 'litmus' are ready!"
+    echo "All Litmus pods in '$LITMUS_NAMESPACE' are ready (Running or Completed)."
     break
   fi
 
