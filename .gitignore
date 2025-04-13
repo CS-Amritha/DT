@@ -6,6 +6,7 @@
 # Ignore IDE and editor files
 .vscode/
 .idea/
+.DS_Store
 *.swp
 *.swo
 *.pid
