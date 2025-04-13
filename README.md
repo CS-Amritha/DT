@@ -106,10 +106,10 @@ Our primary focus is on predicting pod errors within Kubernetes clusters. To bui
 ---
 
 ### 📌 ML Model 
-🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜  70% 
+🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
 
 ### 📌 Live Data Tracking  
-🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜  40% 
+🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
 
 
 
