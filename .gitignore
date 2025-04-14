@@ -14,3 +14,5 @@
 # ignore test models
 data/k8s_chaos_data_test_predictions.csv
 frontend/node_modules/
+frontend.log
+.DS_Store
