@@ -4,54 +4,54 @@ import TeamMember from '../components/TeamMember';
 
 // Import sample images - these would be replaced with actual team photos
 const placeholderImages = [
-  'https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80',
-  'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80',
-  'https://images.unsplash.com/photo-1483058712412-4245e9b90334?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80', 
-  'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80',
-  'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80'
+  'https://avatars.githubusercontent.com/u/116827842?v=4',
+  'https://avatars.githubusercontent.com/u/116827111?v=4',
+  'https://avatars.githubusercontent.com/u/116825964?v=4', 
+  'https://avatars.githubusercontent.com/u/116829016?v=4',
+  'https://avatars.githubusercontent.com/u/98827633?v=4'
 ];
 
 // Sample team data
 const teamMembers = [
   {
-    name: "Alex Johnson",
+    name: "C S Amritha",
     role: "Lead Developer",
     image: placeholderImages[0],
-    email: "alex@devtrails.com",
-    linkedin: "https://linkedin.com/in/alexjohnson",
-    github: "https://github.com/alexjohnson"
+    email: "csamritha244@gmail.com",
+    linkedin: "https://www.linkedin.com/in/c-s-amritha-81b789255/",
+    github: "https://github.com/CS-Amritha"
   },
   {
-    name: "Jamie Smith",
-    role: "DevOps Engineer",
-    image: placeholderImages[1],
-    email: "jamie@devtrails.com",
-    linkedin: "https://linkedin.com/in/jamiesmith",
-    github: "https://github.com/jamiesmith"
-  },
-  {
-    name: "Morgan Lee",
-    role: "Frontend Developer",
-    image: placeholderImages[2],
-    email: "morgan@devtrails.com",
-    linkedin: "https://linkedin.com/in/morganlee",
-    github: "https://github.com/morganlee"
-  },
-  {
-    name: "Taylor Rivera",
+    name: "Anaswara Suresh M K",
     role: "Backend Developer",
-    image: placeholderImages[3],
-    email: "taylor@devtrails.com",
-    linkedin: "https://linkedin.com/in/taylorrivera",
-    github: "https://github.com/taylorrivera"
+    image: placeholderImages[1],
+    email: "anaswarasuresh1111@gmail.com",
+    linkedin: "https://www.linkedin.com/in/anaswara-suresh-m-k-475270252/",
+    github: "https://github.com/Anaswara-Suresh"
   },
   {
-    name: "Riley Chen",
-    role: "UI/UX Designer",
+    name: "Avi Nair",
+    role: "Backend Developer",
+    image: placeholderImages[2],
+    email: "avijnair@gmail.com",
+    linkedin: "https://www.linkedin.com/in/avi-nair-a43773256/",
+    github: "https://github.com/Avi-Nair"
+  },
+  {
+    name: "Adithya N S",
+    role: "Data and AI/ML Developer",
+    image: placeholderImages[3],
+    email: "nsadithya004@gmail.com",
+    linkedin: "https://www.linkedin.com/in/adithya-n-s-6644a8255/",
+    github: "https://github.com/ADITHYA-NS"
+  },
+  {
+    name: "R Sruthi",
+    role: "UI/UX and Frontend Developer",
     image: placeholderImages[4],
-    email: "riley@devtrails.com",
-    linkedin: "https://linkedin.com/in/rileychen",
-    github: "https://github.com/rileychen"
+    email: "sruthirs2004@gmail.com",
+    linkedin: "https://www.linkedin.com/in/r-sruthi-345580255/",
+    github: "https://github.com/R-Sruthi"
   }
 ];
 

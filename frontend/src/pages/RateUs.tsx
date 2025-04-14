@@ -6,7 +6,7 @@ import { MessageSquare, QrCode, Star } from 'lucide-react';
 
 const RateUs = () => {
   // Generate a QR code that points to a mailto link
-  const teamLeadEmail = "amrithashyamofficial@gmail.com"; 
+  const teamLeadEmail = "csamritha244@gmail.com"; 
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=mailto:${teamLeadEmail}?subject=Kubeboom%20Feedback`;
   
   return (
