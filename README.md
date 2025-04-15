@@ -1,9 +1,13 @@
- 
+# **KubeBoom**  
+> A Real-Time Kubernetes Health Prediction & Monitoring System  
+> by **Team ClusterBusters**
 
-# **Team ClusterBusters** 
+<p>
+  <img src="frontend/src/assets/kubeboom.png" alt="KubeBoom Logo" width="400"/>
+</p>
 
-Amrita Vishwa Vidyapeetham, Coimbatore  
-B.Tech Computer Science (Cyber Security)    
+**KubeBoom** is a real-time monitoring and predictive analytics tool for Kubernetes clusters. It leverages machine learning to detect pod health anomalies before they escalate into failures. The system integrates Prometheus for metrics collection, a live React-based dashboard for visualization, and a Generative AI backend that provides natural language explanations for any detected issues. Key features include live pod health classification, human-readable alert descriptions, and a dynamic, interactive dashboard for continuous cluster monitoring.
+
 
 # Demo Video  
 Check out the working demo of our project here:  
