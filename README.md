@@ -1,6 +1,6 @@
  
 
-# **Team ClusterBusters** 👩‍💻
+# **Team ClusterBusters** 
 
 Amrita Vishwa Vidyapeetham, Coimbatore  
 B.Tech Computer Science (Cyber Security)    
@@ -21,109 +21,148 @@ Project Structure
 └── README.md             # This file
 ```
 
-🧠 DT - Model Testing Instructions
----
-This repository contains the codebase and scripts for testing our model submission for the hackathon.
+# Demo Video  
+Check out the working demo of our project here:  
+[![Watch the Demo](https://img.shields.io/badge/Watch%20Demo-YouTube-red?logo=youtube)](https://your-demo-video-link.com)
+
+# Phase II  
+Phase II focuses on the extended implementation and integration of the system with real-time environments. This phase includes:
+- Predicts Kubernetes pod health (Good/Bad/Alert) using ML models based on live metrics.
+- Displays pod health on a live dashboard with dynamic visual updates.
+- Integrates with a Large Language Model (LLM) to provide explanations and reasoning behind unhealthy pod predictions.
 
 
-🚀 Quick Start: How to Test the Model
----
-Follow these steps to clone the repository, install dependencies, and run the model on the provided test data.
+## Setup Instructions 
+To run and manage the system in Phase II:
 
-
-🔧 Step 1: Clone the Repository
----
-Clone this repository using Git and move into the project directory:
-
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/CS-Amritha/DT.git
 cd DT
 ```
-📦 Step 2: Install Python Dependencies
----
-Install all required Python packages using pip. Make sure Python 3.8+ is installed.
-
+### 2. Install Requirments.txt
 ```bash
-pip install -r requirements.txt
+pip install -r requirments.txt
 ```
-▶️ Step 3: Run the Prediction Script
----
-Navigate to the test folder and run the run_predictions.sh script using the provided test CSV file.
-
+### 3. Install Frontend Dependencies
 ```bash
-cd test
-bash run_predictions.sh ../data/test_data.csv
+cd frontend
+npm install
+cd ..
+```
+### 4. Running the Application
+```bash
+make up
+```
+### 5. Stop the Application
+```bash
+make down
+```
+### 6. Tear Down MongoDB Database 
+```bash
+make prune
+
 ```
 
-📌 Notes
----
 
-- After prediction, an output CSV file with predicted results will be generated in the same data/ directory.
-- The model’s accuracy will be printed directly in the terminal after the script runs.
-
-
-
-Problem Statement ❓ - Phase I
----
+# Phase I
 Kubernetes clusters can encounter failures such as pod crashes, resource bottlenecks, and network issues. The
 challenge in Phase 1 is to build an AI/ML model capable of predicting these issues before they occur by analysing
 historical and real-time cluster metrics.
 
-**Key Challenges** ⚠️
+**Key Challenges** ⚠
 - Node or pod failures
 - Resource exhaustion (CPU, memory, disk)
 - Network or connectivity issues
 - Service disruptions based on logs and events
   
----
-Phase I Progress Bar 
----  
-### 📌 Data Collection 
-🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90%   
+  
 
-Our primary focus is on predicting pod errors within Kubernetes clusters. To build a robust dataset, we employed **[LitmusChaos](https://docs.litmuschaos.io/docs/introduction/what-is-litmus)** — an open-source chaos engineering platform tailored for cloud-native environments. It enables the simulation of various failure scenarios in a controlled and systematic way, helping us study system resilience under stress.
+## Predicting Pod Failures in Kubernetes Clusters using Machine Learning
+
+This project aims to **predict pod failures** in Kubernetes clusters by leveraging machine learning techniques. To build a meaningful and reliable dataset, we used **[LitmusChaos](https://litmuschaos.io/)** — an open-source chaos engineering tool designed to simulate various failure scenarios in cloud-native environments.
+
+---
 
 ## Workflow Overview
 
-- **Namespace Segmentation**  
-  We structured our Kubernetes cluster into multiple namespaces to isolate different testing environments, ensuring cleaner data collection and minimal cross-interference.
+### Namespace Segmentation
 
-- **Chaos Workflows**  
-  Using LitmusChaos, we designed workflows that inject specific types of faults — such as pod crashes, resource exhaustion, and network partitioning — to simulate real-world failure conditions.
+The Kubernetes cluster is logically divided into **namespaces** to:
 
-- **Pod Classification**  
-  Based on the behavior observed during chaos injection:
-  - **Good Pods**: Stable and functioning normally.
-  - **Alert Pods**: Showing early signs of resource stress or potential failure.
-  - **Bad Pods**: Stressed or deliberately crashed during chaos experiments.
-
-- **Data Labeling & Metrics Collection**  
-  Using Prometheus, we monitored and gathered pod-level metrics throughout the chaos experiments. Each data instance was labeled accordingly (`Good`, `Alert`, or `Bad`).
-
-- **Dataset Compilation**  
-  All labeled metrics were compiled into structured `.csv` files and stored in our dataset directory. This dataset forms the foundation for training and validating our machine learning models focused on predictive pod failure detection.
+- Create isolated test environments  
+- Ensure clean and interference-free data collection
 
 ---
 
-### 📌 ML Model 
-🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
+### Chaos Injection
 
-### 📌 Live Data Tracking  
-🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
+Using **LitmusChaos**, we simulate realistic failure conditions to test pod resilience:
 
+- Pod crashes  
+- Resource exhaustion (CPU, memory)  
+- Network delays and disruptions
 
+These simulations replicate real-world stress environments, enabling our model to learn from diverse pod behaviors.
 
-
-Problem Statement ❓ - Phase II
 ---
-Once issues are predicted, the next step is to automate or recommend actions for remediation. The challenge in Phase
-2 is to create an agent or system capable of responding to these predicted issues by suggesting or implementing actions
-to mitigate potential failures in the Kubernetes cluster.
 
-**Key Challenges** ⚠️
-- Scaling pods when resource exhaustion is predicted
-- Restarting or relocating pods when failures are forecasted
-- Optimizing CPU or memory allocation when bottlenecks are detected
+### Pod Classification
+
+Each pod is categorized into one of the following classes based on its health status during chaos testing:
+
+| Classification | Description                          |
+|----------------|--------------------------------------|
+| **Good**       | Stable and healthy pod               |
+| **Alert**      | Under mild resource stress           |
+| **Bad**        | Crashed or heavily stressed pod      |
+
+---
+
+### Metrics Collection & Labeling
+
+We utilize **Prometheus** to collect **real-time pod-level metrics** during chaos tests, such as:
+
+- CPU and memory usage  
+- Network I/O  
+- Pod restarts  
+- Latency and availability
+
+Each pod instance is labeled accordingly as **Good**, **Alert**, or **Bad** based on these metrics.
+
+---
+
+### Dataset Creation
+
+All collected metrics, along with their labels, are exported into **structured CSV files**. This forms the core dataset used to:
+
+- Train ML models  
+- Evaluate their accuracy and performance  
+- Enable predictive monitoring of pod health in real-world Kubernetes environments
+
+---
+
+## Outcome
+
+The resulting machine learning models help:
+
+- Proactively detect unstable pods  
+- Alert operators about potential failures  
+- Improve the reliability and observability of Kubernetes-based systems
+
+---
+## Progress Bar 
+
+### Data Collection 
+🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
+
+### ML Model 
+🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
+
+### Live Data Tracking  
+🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜  90% 
+
+
 
 
 ## Tech Stack & Tools 🛠️
