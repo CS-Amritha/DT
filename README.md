@@ -226,6 +226,11 @@ All collected metrics, along with their labels, are exported into **structured C
   <img src="https://www.vectorlogo.zone/logos/mongodb/mongodb-icon.svg" alt="MongoDB" width="60"/>
   <img src="https://github.com/user-attachments/assets/fe0d6fcd-8f52-4bac-adce-d3351fbb0af7" alt="google-gemini-icon" height="60">
   <img src="https://avatars.githubusercontent.com/u/156354296?s=200&v=4" alt="FastAPI" width="60"/>
+  <img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" alt="Docker logo" width="80"/>
+
+
+
+
 
   
 
