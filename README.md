@@ -65,6 +65,14 @@ Project Structure
 |── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes
 └── README.md             # This file
 ```
+# Data Collection Flow
+
+<img src="flow_diagrams/data_collection.png" alt="Data Collection flow diagram" width="1000"/>
+
+
+# Live Capture Flow
+
+<img src="flow_diagrams/live_capture.png" alt="Live capture flow diagram" width="1000"/>
 
 # Phase II  
 This phase includes live monitoring of Kubernetes clusters, predictive health classification of pods, dynamic UI visualization, and natural language explanations using GenAI for improved observability and decision-making.
