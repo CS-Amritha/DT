@@ -16,37 +16,36 @@ Check out the working demo of our project here:
 # Setup Instructions 
 To run and manage the system in Phase II:
 
-### 1. Clone the Repository
+###  Clone the Repository
 ```bash
 git clone https://github.com/CS-Amritha/DT.git
 cd DT
 ```
-### 2. Install Requirments.txt
+###  Install Requirments.txt
 ```bash
 pip install -r requirments.txt
 ```
-### 3. Install Frontend Dependencies
+###  Install Frontend Dependencies
 ```bash
 cd frontend
 npm install
 cd ..
 ```
-### 4. Running the Application
+###  Running the Application
 ```bash
 make up
 ```
-### 5. Test the ML Models
-```bash
-make test-model
-```
-### 6. Stop the Application
+###  Stop the Application
 ```bash
 make down
 ```
-### 7. Tear Down MongoDB Database 
+###  Tear Down MongoDB Database 
 ```bash
 make prune
-
+```
+###  Test the ML Models
+```bash
+make test-model
 ```
 ---
 # Project Structure
