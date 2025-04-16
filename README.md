@@ -60,8 +60,8 @@ make test-model
 Project Structure
 
 ├── dataset               # Contains the .csv data generated using our script
-├── presentation          # Presentation Phase I
-├── models                # Two models in .pkl format
+├── presentation          # Final Presentation
+├── models                # models in .pkl format
 ├── src                   # Source code directory
 │── test                  # Python and bash shell script to test the model
 |── archive               # Past work (code, datasets, models, docs)
