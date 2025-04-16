@@ -53,12 +53,11 @@ make test-model
 Project Structure
 
 ├── dataset               # Contains the .csv data generated using our script
-├── docs                  # Documentation.md
 ├── presentation          # Presentation Phase I
 ├── models                # Two models in .pkl format
 ├── src                   # Source code directory
 │── test                  # Python and bash shell script to test the model
-|── archive               # Past work (code, datasets, models)
+|── archive               # Past work (code, datasets, models, docs)
 |── litmus_chaos          # LitmusChaos YAMLs for chaos creation and admin config
 |── frontend              # The frontend components 
 |── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes
