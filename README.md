@@ -58,6 +58,7 @@ Project Structure
 |── archive               # Past work (code, datasets, models)
 |── litmus_chaos          # LitmusChaos YAMLs for chaos creation and admin config
 |── frontend              # The frontend components 
+|── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes.
 └── README.md             # This file
 ```
 
