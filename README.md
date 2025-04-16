@@ -56,7 +56,8 @@ Project Structure
 ├── src                   # Source code directory
 │── test                  # Python and bash shell script to test the model
 |── archive               # Past work (code, datasets, models)
-|
+|── litmus_chaos          # LitmusChaos YAMLs for chaos creation and admin config
+|── frontend              # The frontend components 
 └── README.md             # This file
 ```
 
