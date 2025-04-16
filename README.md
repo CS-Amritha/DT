@@ -35,11 +35,15 @@ cd ..
 ```bash
 make up
 ```
-### 5. Stop the Application
+### 5. Test the ML Models
+```bash
+make test-model
+```
+### 6. Stop the Application
 ```bash
 make down
 ```
-### 6. Tear Down MongoDB Database 
+### 7. Tear Down MongoDB Database 
 ```bash
 make prune
 
@@ -58,7 +62,7 @@ Project Structure
 |── archive               # Past work (code, datasets, models)
 |── litmus_chaos          # LitmusChaos YAMLs for chaos creation and admin config
 |── frontend              # The frontend components 
-|── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes.
+|── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes
 └── README.md             # This file
 ```
 
