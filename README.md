@@ -42,6 +42,9 @@ cd ..
 ```bash
 make up
 ```
+Kubeboom UI: http://localhost:8080
+
+Kubeboom Backend: http://localhost:8000
 ###  Stop the Application
 ```bash
 make down
