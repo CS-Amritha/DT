@@ -64,7 +64,7 @@ make test-model
 ├── presentation          # Final Presentation
 ├── models                # Models in .pkl format
 ├── src                   # Source code directory
-│   ├── analyzers         # analyzing metrics and event logs to identify common errors
+│   ├── analyzers         # Analyzing metrics and event logs to identify common errors
 │   ├── api               # API endpoints and related logic
 │   ├── collectors        # Retrieving metrics using Prometheus queries
 │   ├── config            # Configuration settings and Prometheus query templates for monitoring
