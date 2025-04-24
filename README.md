@@ -60,17 +60,26 @@ make test-model
 ---
 # Project Structure
 ```
-Project Structure
-
 ├── dataset               # Contains the .csv data generated using our script
 ├── presentation          # Final Presentation
-├── models                # models in .pkl format
+├── models                # Models in .pkl format
 ├── src                   # Source code directory
-│── test                  # Python and bash shell script to test the model
-|── archive               # Past work (code, datasets, models, docs)
-|── litmus_chaos          # LitmusChaos YAMLs for chaos creation and admin config
-|── frontend              # The frontend components 
-|── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes
+│   ├── analyzers         # analyzing metrics and event logs to identify common errors
+│   ├── api               # API endpoints and related logic
+│   ├── collectors        # Retrieving metrics using Prometheus queries
+│   ├── config            # Configuration settings and Prometheus query templates for monitoring
+│   ├── core              # Utility functions to interact with a K8s cluster and query Prometheus for monitoring metrics
+│   ├── llm               # Gemini AI model to generate an explanation for health predictions 
+│   ├── notebooks         # Two machine learning models: a Random Forest (RF) classifier and a Neural Network (NN) model
+│   ├── predictor         # Prediction logic and ML model interaction
+│   ├── storage           # Data storage
+│   ├── utils             # Filtering Kubernetes events
+│   └── main.py           # Main monitoring script
+├── test                  # Python and bash shell scripts to test the model
+├── archive               # Past work (code, datasets, models, docs)
+├── litmus_chaos          # LitmusChaos YAMLs for chaos creation and admin config
+├── frontend              # The frontend components
+├── flow_diagrams         # Contains flow diagrams for live data collection and data collection processes
 └── README.md             # This file
 ```
 # Data Collection Flow
