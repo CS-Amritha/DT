@@ -106,9 +106,24 @@ fi
 if kind get clusters | grep -q "^$CLUSTER_NAME$"; then
   echo "kind cluster '$CLUSTER_NAME' already exists."
 else
-  echo "Creating kind cluster '$CLUSTER_NAME'..."
-  kind create cluster --name "$CLUSTER_NAME"
+  echo "Creating a multi-node kind cluster '$CLUSTER_NAME'..."
+
+  # Generate the kind cluster config
+  cat <<EOF > kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: worker
+  - role: worker
+EOF
+
+  # Create the cluster with the config
+  kind create cluster --name "$CLUSTER_NAME" --config kind-config.yaml
   echo "kind cluster '$CLUSTER_NAME' created successfully!"
+
+  # Cleanup
+  rm -f kind-config.yaml
 fi
 
 # Wait for kind cluster nodes to be ready
