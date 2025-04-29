@@ -30,7 +30,7 @@ cd DT
 ```
 ###  Install Requirments.txt
 ```bash
-pip install -r requirments.txt
+pip install -r requirements.txt
 ```
 ###  Install Frontend Dependencies
 ```bash
