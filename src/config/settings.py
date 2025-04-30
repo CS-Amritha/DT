@@ -94,7 +94,7 @@ NODE_QUERIES ={
     "nonde_cpu_load_1m_ratio": "avg(node_load1) / count(node_cpu_seconds_total{mode='system'})",
     "node_cpu_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="cpu"}) or vector(0)',
     "node_cpu_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="cpu"}) or vector(0)',
-    "node_cpu_utilization_ratio": 'sum(rate(node_cpu_seconds_total{instance="{instance}", mode!="idle"}[5m])) / sum(kube_node_status_allocatable{instance="{instance}", resource="cpu"})',
+    "node_cpu_utilization_ratio": "sum(rate(node_cpu_seconds_total{job=\"node-exporter\", mode!=\"idle\"}[5m])) / sum(kube_node_status_allocatable{resource=\"cpu\"})",
 
     # Memory Metrics
     "node_memory_usage": '((1 - (sum(node_memory_MemAvailable_bytes{instance="{instance}"}) or vector(0)) / (sum(node_memory_MemTotal_bytes{instance="{instance}"}) or vector(1))) * 100)',
@@ -106,8 +106,8 @@ NODE_QUERIES ={
 
     # Disk Metrics
     "node_disk_usage": '(1 - sum(node_filesystem_avail_bytes{instance="{instance}"}) / sum(node_filesystem_size_bytes{instance="{instance}"})) * 100',
-    "node_disk_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="ephemeral-storage"}) or vector(0)',
-    "node_disk_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="ephemeral-storage"}) or vector(0)',
+    #"node_disk_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="ephemeral-storage"}) or vector(0)',
+    #"node_disk_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="ephemeral-storage"}) or vector(0)',
     "node_disk_utilization_ratio": '(sum(node_filesystem_size_bytes{instance="{instance}"}) - sum(node_filesystem_avail_bytes{instance="{instance}"})) / sum(node_filesystem_size_bytes{instance="{instance}"})',
     "node_disk_io_time_percent": "avg(rate(node_disk_io_time_seconds_total[2m])) * 100",
     
