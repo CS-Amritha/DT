@@ -58,7 +58,7 @@ const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) 
   ];
 
   const nodeColumns = [
-    'node_cpu_usage', 'node_cpu_usage_percent', 'nonde_cpu_load_1m_ratio',
+    'timestamp', 'node_name', 'node_cpu_usage', 'node_cpu_usage_percent', 'nonde_cpu_load_1m_ratio',
     'node_cpu_capacity', 'node_cpu_allocatable', 'node_cpu_utilization_ratio',
     'node_memory_usage', 'node_memory_available_percent', 'node_swap_usage_percent',
     'node_memory_capacity', 'node_memory_allocatable',
