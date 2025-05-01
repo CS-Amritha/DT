@@ -55,14 +55,14 @@ const PodsPage: React.FC = () => {
     }
   }, [currentPage, timeRange, pageSize]);
 
-  const handleExplain = async (podData: any) => {
-    setSelectedPod(podData);
+  const handleExplain = async (resourceData: any) => {
+    setSelectedPod(resourceData);
     setExplainModalOpen(true);
     setIsExplaining(true);
     setExplanation(null);
     
     try {
-      const result = await api.explainPod(podData);
+      const result = await api.explainPod(resourceData);
       setExplanation(result.explanation);
     } catch (error) {
       console.error('Error explaining pod:', error);
@@ -148,7 +148,7 @@ const PodsPage: React.FC = () => {
         onClose={() => setExplainModalOpen(false)}
         explanation={explanation}
         isLoading={isExplaining}
-        podData={selectedPod}
+        resourceData={selectedPod}
       />
     </div>
   );

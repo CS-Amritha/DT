@@ -15,7 +15,7 @@ interface ExplainModalProps {
   onClose: () => void;
   explanation: string | null;
   isLoading: boolean;
-  podData?: any;
+  resourceData?: any;
 }
 
 // Utility to clean up excessive newlines
@@ -27,18 +27,25 @@ const ExplainModal: React.FC<ExplainModalProps> = ({
   onClose,
   explanation,
   isLoading,
-  podData,
+  resourceData,
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl h-[80vh]">
         <DialogHeader>
-          <DialogTitle>
-            Pod Explanation
-            {podData?.pod && (
-              <span className="ml-2 text-kubernetes-purple">{podData.pod}</span>
+        <DialogTitle>
+            {resourceData?.pod
+                ? 'Pod Explanation'
+                : resourceData?.node_name
+                ? 'Node Explanation'
+                : 'Explanation'}
+
+            {(resourceData?.pod || resourceData?.node_name) && (
+                <span className="ml-2 text-kubernetes-purple">
+                {resourceData?.pod || resourceData?.node_name}
+                </span>
             )}
-          </DialogTitle>
+        </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="flex-1 h-[60vh]">

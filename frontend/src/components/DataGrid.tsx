@@ -71,7 +71,6 @@ const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) 
   ];
 
   const columns = isPods ? podColumns : nodeColumns;
-
   const normalizeKeys = (data: any) => {
     const mapping: Record<string, string> = {
       'CPU Throttling': 'CPU_Throttling',
@@ -127,7 +126,7 @@ const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) 
                     <DropdownMenuItem onClick={() => handleDownload('csv', item)}>
                       Download CSV
                     </DropdownMenuItem>
-                    {isPods && onExplain && (
+                    {onExplain && (
                       <DropdownMenuItem
                         onClick={() => {                       
                           onExplain(normalizeKeys(item));

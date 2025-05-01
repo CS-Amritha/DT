@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api, TimeRange } from '@/services/api';
 import DataGrid from '@/components/DataGrid';
 import TimeRangeSelector from '@/components/TimeRangeSelector';
 import Pagination from '@/components/Pagination';
+import ExplainModal from '@/components/ExplainModal';
 import RefreshIndicator from '@/components/RefreshIndicator';
 import { toast } from '@/components/ui/sonner';
 
@@ -15,6 +15,10 @@ const NodesPage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [explainModalOpen, setExplainModalOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [isExplaining, setIsExplaining] = useState(false);
   const [pageSize, setPageSize] = useState(5);
   
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,6 +53,24 @@ const NodesPage: React.FC = () => {
       setIsRefreshing(false);
     }
   }, [currentPage, timeRange, pageSize]);
+
+  const handleExplain = async (resourceData: any) => {
+    setSelectedNode(resourceData);
+    setExplainModalOpen(true);
+    setIsExplaining(true);
+    setExplanation(null);
+  
+    try {
+      const result = await api.explainNode(resourceData);
+      setExplanation(result.explanation);
+    } catch (error) {
+      console.error('Error explaining node:', error);
+      toast.error('Failed to get explanation');
+      setExplanation('Failed to get explanation. Please try again.');
+    } finally {
+      setIsExplaining(false);
+    }
+  };
 
   const handleTimeRangeChange = (newTimeRange: TimeRange) => {
     setTimeRange(newTimeRange);
@@ -103,7 +125,11 @@ const NodesPage: React.FC = () => {
       ) : (
         <>
           <div className="bg-white shadow-sm rounded-lg overflow-hidden mb-4">
-            <DataGrid data={nodes} />
+            <DataGrid 
+            data={nodes}
+            isPods={false} 
+            onExplain={handleExplain} 
+             />
           </div>
           
           <Pagination
@@ -115,6 +141,13 @@ const NodesPage: React.FC = () => {
           />
         </>
       )}
+      <ExplainModal
+        isOpen={explainModalOpen}
+        onClose={() => setExplainModalOpen(false)}
+        explanation={explanation}
+        isLoading={isExplaining}
+        resourceData={selectedNode}
+      />
     </div>
   );
 };
