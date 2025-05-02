@@ -87,28 +87,37 @@ POD_QUERIES = {
     "memory_utilization_ratio": '(sum(container_memory_usage_bytes{pod="{pod}"}) or vector(0)) / (sum(kube_pod_container_resource_limits{pod="{pod}" , resource="memory"}) or vector(1))',
 }
 
-NODE_QUERIES = {
+NODE_QUERIES ={
     # CPU Metrics
-    "node_cpu_usage": '(sum(rate(node_cpu_seconds_total{mode!="idle", node="{node}"}[5m])) or vector(0)) * 100',
+    "node_cpu_usage": '(sum(rate(node_cpu_seconds_total{mode!="idle", instance="{instance}"}[5m])) or vector(0)) * 100',
+    "node_cpu_usage_percent": "avg(rate(node_cpu_seconds_total{mode!='idle'}[2m])) * 100",
+    "nonde_cpu_load_1m_ratio": "avg(node_load1) / count(node_cpu_seconds_total{mode='system'})",
     "node_cpu_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="cpu"}) or vector(0)',
     "node_cpu_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="cpu"}) or vector(0)',
-    "node_cpu_utilization_ratio": 'sum(rate(node_cpu_seconds_total{node="{node}", mode!="idle"}[5m])) / sum(kube_node_status_allocatable{node="{node}", resource="cpu"})',
+    "node_cpu_utilization_ratio": "sum(rate(node_cpu_seconds_total{job=\"node-exporter\", mode!=\"idle\"}[5m])) / sum(kube_node_status_allocatable{resource=\"cpu\"})",
 
     # Memory Metrics
-    "node_memory_usage": '((1 - (sum(node_memory_MemAvailable_bytes) or vector(0)) / (sum(node_memory_MemTotal_bytes) or vector(1))) * 100)',
+    "node_memory_usage": '((1 - (sum(node_memory_MemAvailable_bytes{instance="{instance}"}) or vector(0)) / (sum(node_memory_MemTotal_bytes{instance="{instance}"}) or vector(1))) * 100)',
+    "node_memory_available_percent": "100 * (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+    "node_swap_usage_percent": "100 * ((node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / (node_memory_SwapTotal_bytes or vector(1)))",
+    "node_memory_capacity": 'sum(kube_node_status_capacity{instance="{instance}", resource="memory"}) or vector(0)',
     "node_memory_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="memory"}) or vector(0)',
     "node_memory_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="memory"}) or vector(0)',
-    "node_memory_utilization_ratio": '1 - (sum(node_memory_MemAvailable_bytes{node="{node}"}) / sum(node_memory_MemTotal_bytes{node="{node}"}))',
 
     # Disk Metrics
-    "node_disk_usage": '(1 - sum(node_filesystem_avail_bytes{node="{node}"}) / sum(node_filesystem_size_bytes{node="{node}"})) * 100',
-    "node_disk_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="ephemeral-storage"}) or vector(0)',
-    "node_disk_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="ephemeral-storage"}) or vector(0)',
-    "node_disk_utilization_ratio": '(sum(node_filesystem_size_bytes{node="{node}"}) - sum(node_filesystem_avail_bytes{node="{node}"})) / sum(node_filesystem_size_bytes{node="{node}"})',
-
+    "node_disk_usage": '(1 - sum(node_filesystem_avail_bytes{instance="{instance}"}) / sum(node_filesystem_size_bytes{instance="{instance}"})) * 100',
+    #"node_disk_capacity": 'sum(kube_node_status_capacity{node="{node}", resource="ephemeral-storage"}) or vector(0)',
+    #"node_disk_allocatable": 'sum(kube_node_status_allocatable{node="{node}", resource="ephemeral-storage"}) or vector(0)',
+    "node_disk_utilization_ratio": '(sum(node_filesystem_size_bytes{instance="{instance}"}) - sum(node_filesystem_avail_bytes{instance="{instance}"})) / sum(node_filesystem_size_bytes{instance="{instance}"})',
+    "node_disk_io_time_percent": "avg(rate(node_disk_io_time_seconds_total[2m])) * 100",
+    
+    
     # Network Metrics
-    "node_network_receive_bytes": 'sum(rate(node_network_receive_bytes_total{node="{node}"}[5m]))',
-    "node_network_transmit_bytes": 'sum(rate(node_network_transmit_bytes_total{node="{node}"}[5m]))',
+    "node_network_receive_bytes": 'sum(rate(node_network_receive_bytes_total{instance="{instance}"}[5m]))',
+    "node_network_transmit_bytes": 'sum(rate(node_network_transmit_bytes_total{instance="{instance}"}[5m]))',
+
+    
+    
     "node_network_errors": 'sum(rate(node_network_receive_errs_total{node="{node}"}[5m])) or vector(0)',
 
     # Node Status & Conditions
@@ -117,10 +126,16 @@ NODE_QUERIES = {
     "node_disk_pressure": 'max(kube_node_status_condition{node="{node}", condition="DiskPressure"})',
     "node_pid_pressure": 'max(kube_node_status_condition{node="{node}", condition="PIDPressure"})',
     "node_unschedulable": 'max(kube_node_spec_unschedulable{node="{node}"})',
-
+    
     # Node Age
     "node_age_seconds": 'time() - kube_node_created{node="{node}"}'
+    
+    
 }
+    
+    
+    
+
 
 DEPLOYMENT_QUERIES = {
     # Replica Metrics

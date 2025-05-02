@@ -58,17 +58,19 @@ const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) 
   ];
 
   const nodeColumns = [
-    'timestamp', 'node_name',
-    'node_cpu_usage', 'node_cpu_capacity', 'node_cpu_allocatable', 'node_cpu_utilization_ratio',
-    'node_memory_usage', 'node_memory_capacity', 'node_memory_allocatable', 'node_memory_utilization_ratio',
-    'node_disk_usage', 'node_disk_capacity', 'node_disk_allocatable', 'node_disk_utilization_ratio',
+    'timestamp', 'node_name', 'node_cpu_usage', 'node_cpu_usage_percent', 'nonde_cpu_load_1m_ratio',
+    'node_cpu_capacity', 'node_cpu_allocatable', 'node_cpu_utilization_ratio',
+    'node_memory_usage', 'node_memory_available_percent', 'node_swap_usage_percent',
+    'node_memory_capacity', 'node_memory_allocatable',
+    'node_disk_usage', 'node_disk_utilization_ratio', 'node_disk_io_time_percent',
     'node_network_receive_bytes', 'node_network_transmit_bytes', 'node_network_errors',
-    'node_ready', 'node_memory_pressure', 'node_disk_pressure', 'node_pid_pressure', 'node_unschedulable',
-    'node_age_seconds'
+    'node_ready', 'node_memory_pressure', 'node_disk_pressure',
+    'node_pid_pressure', 'node_unschedulable', 'node_age_seconds',
+    'predicted_label', 'prob_good', 'prob_bad', 'prob_alert'
+
   ];
 
   const columns = isPods ? podColumns : nodeColumns;
-
   const normalizeKeys = (data: any) => {
     const mapping: Record<string, string> = {
       'CPU Throttling': 'CPU_Throttling',
@@ -124,7 +126,7 @@ const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) 
                     <DropdownMenuItem onClick={() => handleDownload('csv', item)}>
                       Download CSV
                     </DropdownMenuItem>
-                    {isPods && onExplain && (
+                    {onExplain && (
                       <DropdownMenuItem
                         onClick={() => {                       
                           onExplain(normalizeKeys(item));

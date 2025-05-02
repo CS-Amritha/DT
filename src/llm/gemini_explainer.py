@@ -6,7 +6,7 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-pro-latest")
 
-def explain_prediction(data: dict) -> str:
+def explain_pod_prediction(data: dict) -> str:
     prompt = f"""
 You are a Kubernetes expert helping to analyze pod health predictions based on resource metrics and alert signals.
 
@@ -52,3 +52,46 @@ Use clear reasoning and align explanations with the relevant metrics and alert s
     response = model.generate_content(prompt)
     return response.text
 
+def explain_node_prediction(data: dict) -> str:
+    # No need to recompute 'node_memory_utilization_ratio'
+    data['time_since_node_start'] = data.get('node_age_seconds', 0.0)
+
+    prompt = f"""
+You are a Kubernetes expert analyzing **node health predictions** using resource usage, pressure conditions, and alert signals.
+
+The node **'{data.get('node_name', 'N/A')}'** was predicted as **'{data.get('predicted_label', 'unknown')}'** with the following metrics:
+
+**CPU**
+- Usage: {data.get('node_cpu_usage')}, Usage %: {data.get('node_cpu_usage_percent')}, Load 1m Ratio: {data.get('nonde_cpu_load_1m_ratio')}
+- Capacity: {data.get('node_cpu_capacity')}, Allocatable: {data.get('node_cpu_allocatable')}, Utilization Ratio: {data.get('node_cpu_utilization_ratio')}
+
+**Memory**
+- Usage: {data.get('node_memory_usage')}, Available %: {data.get('node_memory_available_percent')}, Swap %: {data.get('node_swap_usage_percent')}
+- Capacity: {data.get('node_memory_capacity')}, Allocatable: {data.get('node_memory_allocatable')}, Utilization Ratio: {data.get('node_memory_utilization_ratio')}
+
+**Disk**
+- Usage: {data.get('node_disk_usage')}, Utilization Ratio: {data.get('node_disk_utilization_ratio')}, IO Time %: {data.get('node_disk_io_time_percent')}
+
+**Network**
+- Receive Bytes: {data.get('node_network_receive_bytes')}, Transmit Bytes: {data.get('node_network_transmit_bytes')}, Errors: {data.get('node_network_errors')}
+
+**Node Conditions**
+- Ready: {data.get('node_ready')}, Memory Pressure: {data.get('node_memory_pressure')}, Disk Pressure: {data.get('node_disk_pressure')}, PID Pressure: {data.get('node_pid_pressure')}, Unschedulable: {data.get('node_unschedulable')}
+
+**Uptime**
+- Age: {data.get('node_age_seconds')} seconds
+- Time Since Start: {data['time_since_node_start']} seconds
+
+**Prediction Probabilities**
+- Good: {data.get('prob_good')}
+- Bad: {data.get('prob_bad')}
+- Alert: {data.get('prob_alert')}
+
+**Task:**
+1. Explain why this node was predicted as **'{data.get('predicted_label', 'unknown')}'**.
+2. If the prediction is **'bad'** or **'alert'**, provide guidance to improve the node's condition or resolve potential issues.
+
+Use detailed reasoning aligned with node metrics and conditions.
+"""
+    response = model.generate_content(prompt)
+    return response.text

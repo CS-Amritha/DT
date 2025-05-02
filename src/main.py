@@ -28,7 +28,8 @@ from storage.csv_exporter import CSVExporter
 from storage.mongo_exporter import MongoExporter
 
 # Predictor
-from predictor.predictor import predict_for_document
+from predictor.predictor import predict_for_pod
+from predictor.predictor import predict_for_node
 
 # Settings
 from config.settings import STORAGE_BACKEND, POLLING_INTERVAL
@@ -75,18 +76,29 @@ def main():
                 combined_metric = add_pod_error_flags(combined_metric, pod_errors)
 
                 #Predict and append (Comment this line whenm capturing data for training)
-                combined_metric = predict_for_document(combined_metric)
+                combined_metric = predict_for_pod(combined_metric)
                 combined_data_pods.append(combined_metric)
+                
+            # Process node metrics with predictions and error flags
+            combined_data_nodes = []
+            for node_name, node_metric in node_metrics.items():
+                combined_metric = {"timestamp": timestamp.isoformat(), "node_name": node_name, **node_metric}
+                node_events = filter_events_for_node(new_events, node_name)
+                node_errors = check_node_errors(node_metric, node_events)
+                combined_metric = add_node_error_flags(combined_metric, node_errors)
+                combined_metric = predict_for_node(combined_metric)
+                combined_data_nodes.append(combined_metric)
 
             # Process node and deployment metrics
-            combined_data_nodes = [
-                {"timestamp": timestamp.isoformat(), "node_name": node_name, **node_metrics[node_name]} 
-                for node_name in node_metrics
-            ]
+            #combined_data_nodes = [
+               # {"timestamp": timestamp.isoformat(), "node_name": node_name, **node_metrics[node_name]} 
+                #for node_name in node_metrics
+            #]
             # combined_data_deployments = [
             #     {"timestamp": timestamp.isoformat(), **deployment_metrics[deployment_key]} 
             #     for deployment_key in deployment_metrics
             # ]
+            
 
             # Export to selected backend
             if STORAGE_BACKEND == "mongo":
