@@ -13,9 +13,10 @@ interface DataGridProps {
   data: any[];
   isPods?: boolean;
   onExplain?: (rowData: any) => void;
+  onRemediate?: (rowData: any) => void;
 }
 
-const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) => {
+const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain, onRemediate, }) => {
   if (!Array.isArray(data) || data.length === 0) {
     return (
       <div className="text-center py-12">
@@ -133,6 +134,11 @@ const DataGrid: React.FC<DataGridProps> = ({ data, isPods = false, onExplain }) 
                         }}
                       >
                         Explain
+                        </DropdownMenuItem>
+                    )}
+                    {onRemediate && (
+                      <DropdownMenuItem onClick={() => onRemediate(normalizeKeys(item))}>
+                        Remediate
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>

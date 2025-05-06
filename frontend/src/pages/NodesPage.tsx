@@ -72,6 +72,7 @@ const NodesPage: React.FC = () => {
     }
   };
 
+
   const handleTimeRangeChange = (newTimeRange: TimeRange) => {
     setTimeRange(newTimeRange);
     setCurrentPage(0); // Reset to first page when changing time range

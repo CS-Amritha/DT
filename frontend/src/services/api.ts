@@ -66,4 +66,14 @@ export const api = {
     const response = await axios.post(`${BASE_URL}/explain/node`, nodeData);
     return response.data;
   },
+
+  async remediatePod(podData: any) {
+    const response = await axios.post(`${BASE_URL}/remediate/pod`, podData);
+    return response.data;
+  },
+
+  async remediateNode(nodeData: any) {
+    const response = await axios.post(`${BASE_URL}/remediate/node`, nodeData);
+    return response.data;
+  },
 };

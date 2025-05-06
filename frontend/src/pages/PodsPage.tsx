@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api, TimeRange } from '@/services/api';
 import DataGrid from '@/components/DataGrid';
 import TimeRangeSelector from '@/components/TimeRangeSelector';
 import Pagination from '@/components/Pagination';
 import ExplainModal from '@/components/ExplainModal';
+import RemediateModal from '@/components/RemediateModal'; 
 import RefreshIndicator from '@/components/RefreshIndicator';
 import { toast } from '@/components/ui/sonner';
 
@@ -21,6 +21,9 @@ const PodsPage: React.FC = () => {
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
   const [pageSize, setPageSize] = useState(5);
+  const [remediateModalOpen, setRemediateModalOpen] = useState(false);
+  const [isRemediation, setIsRemediation] = useState(false);
+  const [remediation, setRemediation] = useState<string | null>(null); 
   
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -70,6 +73,23 @@ const PodsPage: React.FC = () => {
       setExplanation('Failed to get explanation. Please try again.');
     } finally {
       setIsExplaining(false);
+    }
+  };
+  const handleRemediate = async (resourceData: any) => {
+    setSelectedPod(resourceData);
+    setRemediateModalOpen(true);
+    setIsRemediation(true);
+    setRemediation(null);
+
+    try {
+      const result = await api.remediatePod(resourceData); 
+      setRemediation(result.remediation);
+    } catch (error) {
+      console.error('Error during remediation planning:', error);
+      toast.error('Failed to plan remediation');
+      setRemediation('Failed to plan remediation. Please try again.');
+    } finally {
+      setIsRemediation(false);
     }
   };
 
@@ -130,6 +150,7 @@ const PodsPage: React.FC = () => {
               data={pods} 
               isPods={true} 
               onExplain={handleExplain} 
+              onRemediate={handleRemediate}
             />
           </div>
           
@@ -148,6 +169,14 @@ const PodsPage: React.FC = () => {
         onClose={() => setExplainModalOpen(false)}
         explanation={explanation}
         isLoading={isExplaining}
+        resourceData={selectedPod}
+      />
+
+      <RemediateModal
+        isOpen={remediateModalOpen}
+        onClose={() => setRemediateModalOpen(false)}
+        remediation={remediation}
+        isPlanning={isRemediation}
         resourceData={selectedPod}
       />
     </div>
