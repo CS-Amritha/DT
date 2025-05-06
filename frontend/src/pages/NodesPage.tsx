@@ -4,6 +4,7 @@ import DataGrid from '@/components/DataGrid';
 import TimeRangeSelector from '@/components/TimeRangeSelector';
 import Pagination from '@/components/Pagination';
 import ExplainModal from '@/components/ExplainModal';
+import RemediateModal from '@/components/RemediateModal';
 import RefreshIndicator from '@/components/RefreshIndicator';
 import { toast } from '@/components/ui/sonner';
 
@@ -19,8 +20,11 @@ const NodesPage: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
+  const [remediateModalOpen, setRemediateModalOpen] = useState(false);
+  const [isRemediation, setIsRemediation] = useState(false);
+  const [remediation, setRemediation] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState(5);
-  
+
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -29,17 +33,17 @@ const NodesPage: React.FC = () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      
+
       abortControllerRef.current = new AbortController();
       setIsLoading(true);
       setIsRefreshing(true);
-      
+
       const data = await api.fetchNodes({
         limit: pageSize,
         skip: currentPage * pageSize,
         timeRange,
       });
-      
+
       setNodes(data.data);
       setHasMore(data.skip + data.count < data.total);
       setLastRefreshed(new Date());
@@ -59,7 +63,7 @@ const NodesPage: React.FC = () => {
     setExplainModalOpen(true);
     setIsExplaining(true);
     setExplanation(null);
-  
+
     try {
       const result = await api.explainNode(resourceData);
       setExplanation(result.explanation);
@@ -72,36 +76,48 @@ const NodesPage: React.FC = () => {
     }
   };
 
+  const handleRemediate = async (resourceData: any) => {
+    setSelectedNode(resourceData);
+    setRemediateModalOpen(true);
+    setIsRemediation(true);
+    setRemediation(null);
+
+    try {
+      const result = await api.remediateNode(resourceData);
+      setRemediation(result.remediation);
+    } catch (error) {
+      console.error('Error during remediation planning:', error);
+      toast.error('Failed to plan remediation');
+      setRemediation('Failed to plan remediation. Please try again.');
+    } finally {
+      setIsRemediation(false);
+    }
+  };
 
   const handleTimeRangeChange = (newTimeRange: TimeRange) => {
     setTimeRange(newTimeRange);
-    setCurrentPage(0); // Reset to first page when changing time range
+    setCurrentPage(0);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-  
+
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
-    setCurrentPage(0); // Reset to first page when changing page size
+    setCurrentPage(0);
   };
 
   useEffect(() => {
     fetchNodes();
-    
-    // Set up regular refresh interval
+
     refreshIntervalRef.current = setInterval(() => {
       fetchNodes();
     }, 2000);
-    
+
     return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, [fetchNodes]);
 
@@ -109,30 +125,31 @@ const NodesPage: React.FC = () => {
     <div className="container mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-gray-800 mb-2">Kubernetes Nodes</h1>
-        <p className="text-gray-500">Monitor node health and resources</p>
+        <p className="text-gray-500">Monitor and manage your nodes</p>
       </div>
-      
+
       <div className="flex justify-between items-center mb-6">
         <TimeRangeSelector value={timeRange} onChange={handleTimeRangeChange} />
         <RefreshIndicator isRefreshing={isRefreshing} lastRefreshed={lastRefreshed} />
       </div>
-      
+
       {isLoading && nodes.length === 0 ? (
         <div className="flex justify-center items-center h-64">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-kubernetes-purple border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent" role="status">
+            <span className="sr-only">Loading...</span>
           </div>
         </div>
       ) : (
         <>
           <div className="bg-white shadow-sm rounded-lg overflow-hidden mb-4">
-            <DataGrid 
-            data={nodes}
-            isPods={false} 
-            onExplain={handleExplain} 
-             />
+            <DataGrid
+              data={nodes}
+              isPods={false}
+              onExplain={handleExplain}
+              onRemediate={handleRemediate}
+            />
           </div>
-          
+
           <Pagination
             currentPage={currentPage}
             pageSize={pageSize}
@@ -142,11 +159,20 @@ const NodesPage: React.FC = () => {
           />
         </>
       )}
+
       <ExplainModal
         isOpen={explainModalOpen}
         onClose={() => setExplainModalOpen(false)}
         explanation={explanation}
         isLoading={isExplaining}
+        resourceData={selectedNode}
+      />
+
+      <RemediateModal
+        isOpen={remediateModalOpen}
+        onClose={() => setRemediateModalOpen(false)}
+        remediation={remediation}
+        isPlanning={isRemediation}
         resourceData={selectedNode}
       />
     </div>
