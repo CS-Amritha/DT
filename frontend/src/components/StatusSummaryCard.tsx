@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 interface StatusSummaryCardProps {
   title: string;
   good: number;
-  warning: number;
-  critical: number;
+  alert: number;
+  bad: number;
   total: number;
   type: 'pods' | 'nodes';
 }
@@ -14,8 +14,8 @@ interface StatusSummaryCardProps {
 const StatusSummaryCard: React.FC<StatusSummaryCardProps> = ({
   title,
   good,
-  warning,
-  critical,
+  alert,
+  bad,
   total,
   type
 }) => {
@@ -38,17 +38,17 @@ const StatusSummaryCard: React.FC<StatusSummaryCardProps> = ({
             </div>
           </div>
           <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">Warning</div>
+            <div className="text-xs text-muted-foreground">Alert</div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              <span className="font-medium">{warning}</span>
+              <span className="font-medium">{alert}</span>
             </div>
           </div>
           <div className="flex flex-col">
-            <div className="text-xs text-muted-foreground">Critical</div>
+            <div className="text-xs text-muted-foreground">Bad</div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="font-medium">{critical}</span>
+              <span className="font-medium">{bad}</span>
             </div>
           </div>
         </div>
@@ -61,11 +61,11 @@ const StatusSummaryCard: React.FC<StatusSummaryCardProps> = ({
             ></div>
             <div 
               className="bg-amber-500 h-full" 
-              style={{ width: `${total > 0 ? (warning / total) * 100 : 0}%` }}
+              style={{ width: `${total > 0 ? (alert / total) * 100 : 0}%` }}
             ></div>
             <div 
               className="bg-red-500 h-full" 
-              style={{ width: `${total > 0 ? (critical / total) * 100 : 0}%` }}
+              style={{ width: `${total > 0 ? (bad / total) * 100 : 0}%` }}
             ></div>
           </div>
         </div>
