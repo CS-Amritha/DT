@@ -10,6 +10,7 @@ const Sidebar = ({ collapsed, setCollapsed }: { collapsed: boolean, setCollapsed
     { name: 'Home', icon: <Home />, path: '/' },
     { name: 'Pods', icon: <Layers />, path: '/pods' },
     { name: 'Nodes', icon: <Server />, path: '/nodes' },
+    { name: 'Analytics', icon: <Server />, path: '/analytics' },
     { name: 'About Us', icon: <Users />, path: '/about' },
     { name: 'Rate Us', icon: <Star />, path: '/rate' },
     { name: 'About Project', icon: <BookOpen />, path: '/about-project' },
