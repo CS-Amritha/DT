@@ -7,16 +7,12 @@ interface ResourceMetricsCardProps {
   title: string;
   cpuUsage: number;
   memoryUsage: number;
-  diskUsage: number;
-  networkIO: number;
 }
 
 const ResourceMetricsCard: React.FC<ResourceMetricsCardProps> = ({
   title,
   cpuUsage,
   memoryUsage,
-  diskUsage,
-  networkIO
 }) => {
   return (
     <Card>
@@ -41,21 +37,6 @@ const ResourceMetricsCard: React.FC<ResourceMetricsCardProps> = ({
             <Progress value={memoryUsage} className="h-1" />
           </div>
           
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Disk</span>
-              <span className="font-medium">{Math.round(diskUsage)}%</span>
-            </div>
-            <Progress value={diskUsage} className="h-1" />
-          </div>
-          
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Network I/O</span>
-              <span className="font-medium">{Math.round(networkIO)}%</span>
-            </div>
-            <Progress value={networkIO} className="h-1" />
-          </div>
         </div>
       </CardContent>
     </Card>
