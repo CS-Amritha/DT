@@ -58,7 +58,7 @@ const Analytics: React.FC = () => {
   // Calculate resource metrics
   const calculateResourceMetrics = (items: any[], total: number) => {
     if (items.length === 0 || total === 0) return { cpuUsage: 0, memoryUsage: 0 };
-    console.log(typeof items[0].cpu);  // This will print 'number', 'string', 'undefined', etc.
+    //console.log(typeof items[0].cpu);  // This will print 'number', 'string', 'undefined', etc.
 
       let cpuSum: number = items.reduce((sum, item) => sum + item.cpu_usage, 0);
       let memorySum: number = items.reduce((sum, item) => sum + item.memory_usage, 0);
@@ -72,23 +72,47 @@ const Analytics: React.FC = () => {
   
   
   // Generate mock time series data for visualization
-  const generateTimeSeriesData = () => {
+  const generateTimeSeriesData = (podMetricsArray) => {
     const points = 24;
     const now = Date.now();
     const timestamps = Array(points).fill(0).map((_, i) => 
-      new Date(now - (points - i - 1) * 3600000).toISOString()
+        new Date(now - (points - i - 1) * 3600000).toISOString()
     );
-    
+
+    // Initialize aggregated metrics
+    const cpuUsage = Array(points).fill(0);
+    const memoryUsage = Array(points).fill(0);
+    const cpuLimit = Array(points).fill(0);
+    const memoryLimit = Array(points).fill(0);
+    const cpuRequest = Array(points).fill(0);
+    const memoryRequest = Array(points).fill(0);
+
+    // Process each pod's metrics
+    podMetricsArray.forEach(pod => {
+        // Assuming each pod object has the metrics we need as direct properties
+        const podTimestamp = new Date(pod.timestamp).getTime();
+        const hourIndex = Math.floor((now - podTimestamp) / 3600000);
+        
+        if (hourIndex >= 0 && hourIndex < points) {
+            cpuUsage[hourIndex] += pod.cpu_usage || 0;
+            memoryUsage[hourIndex] += pod.memory_usage || 0;
+            cpuLimit[hourIndex] += pod.cpu_limit || 0;
+            memoryLimit[hourIndex] += pod.memory_limit || 0;
+            cpuRequest[hourIndex] += pod.cpu_request || 0;
+            memoryRequest[hourIndex] += pod.memory_request || 0;
+        }
+    });
+
     return {
-      timestamps,
-      cpu: Array(points).fill(0).map(() => Math.floor(30 + Math.random() * 60)),
-      memory: Array(points).fill(0).map(() => Math.floor(40 + Math.random() * 40)),
-      disk: Array(points).fill(0).map(() => Math.floor(20 + Math.random() * 50)),
-      network: Array(points).fill(0).map(() => Math.floor(10 + Math.random() * 70)),
-      restarts: Array(points).fill(0).map(() => Math.floor(Math.random() * 5)),
-      errors: Array(points).fill(0).map(() => Math.floor(Math.random() * 10)),
+        timestamps,
+        cpuUsage,
+        memoryUsage,
+        cpuLimit,
+        memoryLimit,
+        cpuRequest,
+        memoryRequest,
     };
-  };
+};
 
   // Generate mock remediation history
   const generateRemediationHistory = (type: 'pod' | 'node', count: number) => {
@@ -206,11 +230,13 @@ const Analytics: React.FC = () => {
   const currentItems = viewType === 'pods' ? pods : nodes;
   const currentTotal = viewType === 'pods' ? podTotal : nodeTotal;
   const statusCounts = calculateStatusCounts(currentItems); 
-  console.log(currentItems[0]);
+  //console.log(currentItems[0]);
   const total = viewType === 'pods' ? podTotal : nodeTotal;
   const resourceMetrics = calculateResourceMetrics(currentItems, total);
-  console.log(resourceMetrics);
-  const timeSeriesData = generateTimeSeriesData();
+  //console.log(resourceMetrics);
+  console.log(currentItems);
+  const timeSeriesData = generateTimeSeriesData(currentItems);
+  console.log(timeSeriesData);
   
   // For remediation metrics, generate mock data  
   const remediationCount = Math.floor(currentItems.length * 0.3);
