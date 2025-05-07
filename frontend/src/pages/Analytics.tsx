@@ -41,21 +41,18 @@ const Analytics: React.FC = () => {
   // Helper function to calculate status counts
   const calculateStatusCounts = (items: any[]) => {
     const good = items.filter(item => 
-      (item.status === 'Running' && item.restarts < 3) || 
-      item.status === 'Ready'
+      (item.predicted_label === 'good')
     ).length;
     
-    const warning = items.filter(item => 
-      (item.status === 'Running' && item.restarts >= 3) || 
-      item.status === 'Pending'
+    const bad = items.filter(item => 
+      (item.predicted_label === 'bad')
     ).length;
     
-    const critical = items.filter(item => 
-      item.status === 'Failed' || 
-      item.status === 'NotReady'
+    const alert = items.filter(item => 
+      (item.predicted_label === 'alert')
     ).length;
     
-    return { good, warning, critical };
+    return { good, bad , alert};
   };
 
   // Calculate resource metrics
@@ -137,7 +134,11 @@ const Analytics: React.FC = () => {
       });
       
       setPods(data.data);
-      setPodTotal(data.total);
+      const total = new Set(data.data.map(item => item.pod));
+      console.log(data.data[0]);
+      console.log(total);
+      setPodTotal(total.size);
+      console.log(data)
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -167,9 +168,12 @@ const Analytics: React.FC = () => {
         limit: 20,  // Get a larger sample for analytics
         timeRange,
       });
-      
       setNodes(data.data);
-      setNodeTotal(data.total);
+      const total = new Set(data.data.map(item => item.node));
+      console.log(data.data[0]);
+      console.log(total);
+      setNodeTotal(total.size);
+
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -215,7 +219,8 @@ const Analytics: React.FC = () => {
   // Get current data based on view type
   const currentItems = viewType === 'pods' ? pods : nodes;
   const currentTotal = viewType === 'pods' ? podTotal : nodeTotal;
-  const statusCounts = calculateStatusCounts(currentItems);
+  const statusCounts = calculateStatusCounts(currentItems); 
+  console.log(currentItems[0]);
   const resourceMetrics = calculateResourceMetrics(currentItems);
   const timeSeriesData = generateTimeSeriesData();
   
@@ -230,8 +235,8 @@ const Analytics: React.FC = () => {
   // Prepare data for pie chart
   const statusData = [
     { name: 'Good', value: statusCounts.good, color: '#10B981' },
-    { name: 'Warning', value: statusCounts.warning, color: '#F59E0B' },
-    { name: 'Critical', value: statusCounts.critical, color: '#EF4444' }
+    { name: 'Alert', value: statusCounts.alert, color: '#F59E0B' },
+    { name: 'Bad', value: statusCounts.bad, color: '#EF4444' }
   ];
 
   const remediationData = [
@@ -278,8 +283,8 @@ const Analytics: React.FC = () => {
     const nodesStatusCounts = calculateStatusCounts(nodes);
     const nodesMetrics = calculateResourceMetrics(nodes);
     
-    const podsRow = `Pods,${podTotal},${podsStatusCounts.good},${podsStatusCounts.warning},${podsStatusCounts.critical},${Math.round(podsMetrics.cpuUsage)}%,${Math.round(podsMetrics.memoryUsage)}%,${Math.round(podsMetrics.diskUsage)}%,${Math.round(podsMetrics.networkIO)}%\n`;
-    const nodesRow = `Nodes,${nodeTotal},${nodesStatusCounts.good},${nodesStatusCounts.warning},${nodesStatusCounts.critical},${Math.round(nodesMetrics.cpuUsage)}%,${Math.round(nodesMetrics.memoryUsage)}%,${Math.round(nodesMetrics.diskUsage)}%,${Math.round(nodesMetrics.networkIO)}%\n`;
+    const podsRow = `Pods,${podTotal},${podsStatusCounts.good},${podsStatusCounts.alert},${podsStatusCounts.bad},${Math.round(podsMetrics.cpuUsage)}%,${Math.round(podsMetrics.memoryUsage)}%,${Math.round(podsMetrics.diskUsage)}%,${Math.round(podsMetrics.networkIO)}%\n`;
+    const nodesRow = `Nodes,${nodeTotal},${nodesStatusCounts.good},${nodesStatusCounts.alert},${nodesStatusCounts.bad},${Math.round(nodesMetrics.cpuUsage)}%,${Math.round(nodesMetrics.memoryUsage)}%,${Math.round(nodesMetrics.diskUsage)}%,${Math.round(nodesMetrics.networkIO)}%\n`;
     
     const csvContent = headers + podsRow + nodesRow;
     
@@ -349,8 +354,8 @@ const Analytics: React.FC = () => {
             <StatusSummaryCard 
               title={`${viewType === 'pods' ? 'Pod' : 'Node'} Status`} 
               good={statusCounts.good}
-              warning={statusCounts.warning}
-              critical={statusCounts.critical}
+              alert ={statusCounts.alert}
+              bad ={statusCounts.bad}
               total={currentTotal}
               type={viewType}
             />
