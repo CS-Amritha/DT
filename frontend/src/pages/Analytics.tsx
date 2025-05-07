@@ -56,34 +56,20 @@ const Analytics: React.FC = () => {
   };
 
   // Calculate resource metrics
-  const calculateResourceMetrics = (items: any[]) => {
-    if (items.length === 0) return { cpuUsage: 0, memoryUsage: 0, diskUsage: 0, networkIO: 0 };
-    
-    // Extract numeric values from CPU and memory strings (e.g., "50m" or "50%")
-    const cpuValues = items.map(item => {
-      if (typeof item.cpu === 'string') {
-        return parseInt(item.cpu.replace(/\D/g, ''));
-      }
-      return 0;
-    });
-    
-    const memoryValues = items.map(item => {
-      if (typeof item.memory === 'string') {
-        return parseInt(item.memory.replace(/\D/g, ''));
-      }
-      return 0;
-    });
-    
-    // Calculate average usage
-    const cpuUsage = cpuValues.reduce((sum, val) => sum + val, 0) / cpuValues.length;
-    const memoryUsage = memoryValues.reduce((sum, val) => sum + val, 0) / memoryValues.length;
-    
-    // Mock values for disk and network since they're not in the API
-    const diskUsage = Math.floor(Math.random() * 30) + 40;
-    const networkIO = Math.floor(Math.random() * 40) + 30;
-    
-    return { cpuUsage, memoryUsage, diskUsage, networkIO };
+  const calculateResourceMetrics = (items: any[], total: number) => {
+    if (items.length === 0 || total === 0) return { cpuUsage: 0, memoryUsage: 0 };
+    console.log(typeof items[0].cpu);  // This will print 'number', 'string', 'undefined', etc.
+
+      let cpuSum: number = items.reduce((sum, item) => sum + item.cpu_usage, 0);
+      let memorySum: number = items.reduce((sum, item) => sum + item.memory_usage, 0);
+
+      // Optionally round to ensure integer result
+      let cpuUsage: number = Math.round(cpuSum / total);
+      let memoryUsage: number = Math.round(memorySum / total);
+  
+    return { cpuUsage, memoryUsage };
   };
+  
   
   // Generate mock time series data for visualization
   const generateTimeSeriesData = () => {
@@ -135,10 +121,10 @@ const Analytics: React.FC = () => {
       
       setPods(data.data);
       const total = new Set(data.data.map(item => item.pod));
-      console.log(data.data[0]);
-      console.log(total);
+      //console.log(data.data[0]);
+      //console.log(total);
       setPodTotal(total.size);
-      console.log(data)
+      //console.log(data)
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -221,7 +207,9 @@ const Analytics: React.FC = () => {
   const currentTotal = viewType === 'pods' ? podTotal : nodeTotal;
   const statusCounts = calculateStatusCounts(currentItems); 
   console.log(currentItems[0]);
-  const resourceMetrics = calculateResourceMetrics(currentItems);
+  const total = viewType === 'pods' ? podTotal : nodeTotal;
+  const resourceMetrics = calculateResourceMetrics(currentItems, total);
+  console.log(resourceMetrics);
   const timeSeriesData = generateTimeSeriesData();
   
   // For remediation metrics, generate mock data  
@@ -279,9 +267,9 @@ const Analytics: React.FC = () => {
     // Create CSV content
     const headers = 'Resource Type,Total,Good,Warning,Critical,CPU,Memory,Disk,Network IO\n';
     const podsStatusCounts = calculateStatusCounts(pods);
-    const podsMetrics = calculateResourceMetrics(pods);
+    const podsMetrics = calculateResourceMetrics(pods, podTotal);
     const nodesStatusCounts = calculateStatusCounts(nodes);
-    const nodesMetrics = calculateResourceMetrics(nodes);
+    const nodesMetrics = calculateResourceMetrics(nodes, nodeTotal);
     
     const podsRow = `Pods,${podTotal},${podsStatusCounts.good},${podsStatusCounts.alert},${podsStatusCounts.bad},${Math.round(podsMetrics.cpuUsage)}%,${Math.round(podsMetrics.memoryUsage)}%,${Math.round(podsMetrics.diskUsage)}%,${Math.round(podsMetrics.networkIO)}%\n`;
     const nodesRow = `Nodes,${nodeTotal},${nodesStatusCounts.good},${nodesStatusCounts.alert},${nodesStatusCounts.bad},${Math.round(nodesMetrics.cpuUsage)}%,${Math.round(nodesMetrics.memoryUsage)}%,${Math.round(nodesMetrics.diskUsage)}%,${Math.round(nodesMetrics.networkIO)}%\n`;
@@ -361,11 +349,9 @@ const Analytics: React.FC = () => {
             />
             
             <ResourceMetricsCard
-              title="Resource Utilization"
+              title="Average Resource Utilization"
               cpuUsage={resourceMetrics.cpuUsage}
               memoryUsage={resourceMetrics.memoryUsage}
-              diskUsage={resourceMetrics.diskUsage}
-              networkIO={resourceMetrics.networkIO}
             />
             
             <Card>
