@@ -14,9 +14,8 @@ import {
 
 interface TimeSeriesData {
   timestamps: string[];
-  metrics: {
-    [key: string]: number[];
-  };
+  cpu: number[];
+  memory: number[];
   errors?: number[];
   restarts?: number[];
 }
@@ -26,12 +25,7 @@ interface TimeSeriesChartProps {
   title: string;
   description?: string;
   showRestarts?: boolean;
-  usageMetrics?: string[]; // Optional: specify which metrics to show in usage tab
-  errorMetrics?: string[]; // Optional: specify which metrics to show in errors tab
 }
-
-const DEFAULT_USAGE_METRICS = ['cpuUsage', 'memoryUsage'];
-const DEFAULT_ERROR_METRICS = ['errors'];
 
 const COLORS = [
   '#8884d8', '#82ca9d', '#ffc658', '#ff8042', 
@@ -42,9 +36,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   data, 
   title, 
   description, 
-  showRestarts = false,
-  usageMetrics = DEFAULT_USAGE_METRICS,
-  errorMetrics = DEFAULT_ERROR_METRICS
+  showRestarts = false
 }) => {
   const [activeMetric, setActiveMetric] = useState<'usage' | 'errors'>('usage');
   
@@ -68,13 +60,17 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   const validateData = () => {
     if (!data) return false;
     
-    if (!Array.isArray(data.timestamps) || !data.metrics) {
-      return false;
-    }
+    const requiredArrays = ['timestamps', 'cpu', 'memory'];
+    const hasAllArrays = requiredArrays.every(key => 
+      Array.isArray(data[key as keyof TimeSeriesData])
+    );
     
-    // Check all metric arrays have the same length as timestamps
-    return Object.values(data.metrics).every(metric => 
-      Array.isArray(metric) && metric.length === data.timestamps.length
+    if (!hasAllArrays) return false;
+    
+    // Check all arrays have the same length
+    const firstArrayLength = data.timestamps.length;
+    return requiredArrays.every(key => 
+      data[key as keyof TimeSeriesData].length === firstArrayLength
     );
   };
 
@@ -89,8 +85,8 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           <div className="h-80 flex flex-col items-center justify-center gap-2">
             <p className="text-red-500 font-medium">Invalid data format</p>
             <p className="text-sm text-gray-500 text-center">
-              Required: timestamps array and metrics object<br />
-              All metric arrays must match timestamps length
+              Required arrays: timestamps, cpu, memory<br />
+              All arrays must be the same length
             </p>
           </div>
         </CardContent>
@@ -99,34 +95,17 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   }
 
   // Format data for recharts
-  const chartData = data.timestamps.map((timestamp, index) => {
-    const baseItem = {
-      name: new Date(timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false
-      }),
-      ...Object.fromEntries(
-        Object.entries(data.metrics).map(([key, values]) => 
-          [key, values[index] ?? 0]
-        )
-      ),
-      ...(data.errors ? { errors: data.errors[index] ?? 0 } : {})
-    };
-  
-    return showRestarts && data.restarts 
-      ? { ...baseItem, restarts: data.restarts[index] ?? 0 }
-      : baseItem;
-  });
-
-  // Get available metrics based on props and actual data
-  const availableUsageMetrics = usageMetrics.filter(
-    metric => data.metrics[metric]
-  );
-  const availableErrorMetrics = [
-    ...errorMetrics,
-    ...(showRestarts && data.restarts ? ['restarts'] : [])
-  ];
+  const chartData = data.timestamps.map((timestamp, index) => ({
+    name: new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    }),
+    cpu: data.cpu[index] ?? 0,
+    memory: data.memory[index] ?? 0,
+    ...(data.errors && { errors: data.errors[index] ?? 0 }),
+    ...(showRestarts && data.restarts && { restarts: data.restarts[index] ?? 0 })
+  }));
 
   return (
     <Card>
@@ -168,29 +147,17 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
               
               {activeMetric === 'usage' ? (
                 <>
-                  {availableUsageMetrics.map((metric, index) => (
-                    <Line
-                      key={metric}
-                      type="monotone"
-                      dataKey={metric}
-                      stroke={COLORS[index % COLORS.length]}
-                      name={metric}
-                      activeDot={{ r: 6 }}
-                    />
-                  ))}
+                  <Line type="monotone" dataKey="cpu" stroke="#8884d8" name="CPU %" />
+                  <Line type="monotone" dataKey="memory" stroke="#82ca9d" name="Memory %" />
                 </>
               ) : (
                 <>
-                  {availableErrorMetrics.map((metric, index) => (
-                    <Line
-                      key={metric}
-                      type="monotone"
-                      dataKey={metric}
-                      stroke={COLORS[index % COLORS.length]}
-                      name={metric}
-                      activeDot={{ r: 6 }}
-                    />
-                  ))}
+                  {data.errors && (
+                    <Line type="monotone" dataKey="errors" stroke="#ff0000" name="Error Count" />
+                  )}
+                  {showRestarts && data.restarts && (
+                    <Line type="monotone" dataKey="restarts" stroke="#ff8042" name="Restart Count" />
+                  )}
                 </>
               )}
             </LineChart>
