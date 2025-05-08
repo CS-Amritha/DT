@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +27,6 @@ const Analytics: React.FC = () => {
   const [selectedResource, setSelectedResource] = useState<{ name: string; issue: string } | null>(null);
   const [isRemediating, setIsRemediating] = useState(false);
   const [filtersApplied, setFiltersApplied] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
   
   // Pod data state
   const [pods, setPods] = useState<any[]>([]);
@@ -37,6 +35,9 @@ const Analytics: React.FC = () => {
   // Node data state
   const [nodes, setNodes] = useState<any[]>([]);
   const [nodeTotal, setNodeTotal] = useState(0);
+
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Helper function to calculate status counts
   const calculateStatusCounts = (items: any[]) => {
@@ -52,27 +53,25 @@ const Analytics: React.FC = () => {
       (item.predicted_label === 'alert')
     ).length;
     
-    return { good, bad , alert};
+    return { good, bad, alert };
   };
 
   // Calculate resource metrics
   const calculateResourceMetrics = (items: any[], total: number) => {
     if (items.length === 0 || total === 0) return { cpuUsage: 0, memoryUsage: 0 };
-    //console.log(typeof items[0].cpu);  // This will print 'number', 'string', 'undefined', etc.
+    
+    let cpuSum = items.reduce((sum, item) => sum + (item.cpu_usage || 0), 0);
+    let memorySum = items.reduce((sum, item) => sum + (item.memory_usage || 0), 0);
 
-      let cpuSum: number = items.reduce((sum, item) => sum + item.cpu_usage, 0);
-      let memorySum: number = items.reduce((sum, item) => sum + item.memory_usage, 0);
-
-      // Optionally round to ensure integer result
-      let cpuUsage: number = Math.round(cpuSum / total);
-      let memoryUsage: number = Math.round(memorySum / total);
+    // Calculate averages
+    const cpuUsage = Math.round(cpuSum / items.length);
+    const memoryUsage = Math.round(memorySum / items.length);
   
     return { cpuUsage, memoryUsage };
   };
   
-  
   // Generate mock time series data for visualization
-  const generateTimeSeriesData = (podMetricsArray) => {
+  const generateTimeSeriesData = (metricsArray: any[]) => {
     const points = 24;
     const now = Date.now();
     const timestamps = Array(points).fill(0).map((_, i) => 
@@ -82,24 +81,15 @@ const Analytics: React.FC = () => {
     // Initialize aggregated metrics
     const cpuUsage = Array(points).fill(0);
     const memoryUsage = Array(points).fill(0);
-    const cpuLimit = Array(points).fill(0);
-    const memoryLimit = Array(points).fill(0);
-    const cpuRequest = Array(points).fill(0);
-    const memoryRequest = Array(points).fill(0);
 
-    // Process each pod's metrics
-    podMetricsArray.forEach(pod => {
-        // Assuming each pod object has the metrics we need as direct properties
-        const podTimestamp = new Date(pod.timestamp).getTime();
-        const hourIndex = Math.floor((now - podTimestamp) / 3600000);
+    // Process each item's metrics
+    metricsArray.forEach(item => {
+        const itemTimestamp = new Date(item.timestamp).getTime();
+        const hourIndex = Math.floor((now - itemTimestamp) / 3600000);
         
         if (hourIndex >= 0 && hourIndex < points) {
-            cpuUsage[hourIndex] += pod.cpu_usage || 0;
-            memoryUsage[hourIndex] += pod.memory_usage || 0;
-            cpuLimit[hourIndex] += pod.cpu_limit || 0;
-            memoryLimit[hourIndex] += pod.memory_limit || 0;
-            cpuRequest[hourIndex] += pod.cpu_request || 0;
-            memoryRequest[hourIndex] += pod.memory_request || 0;
+            cpuUsage[hourIndex] += item.cpu_usage || 0;
+            memoryUsage[hourIndex] += item.memory_usage || 0;
         }
     });
 
@@ -107,21 +97,21 @@ const Analytics: React.FC = () => {
         timestamps,
         cpuUsage,
         memoryUsage,
-        cpuLimit,
-        memoryLimit,
-        cpuRequest,
-        memoryRequest,
     };
-};
+  };
 
   // Generate mock remediation history
   const generateRemediationHistory = (type: 'pod' | 'node', count: number) => {
+    const resourceNames = type === 'pod' 
+      ? pods.map(p => p.name) 
+      : nodes.map(n => n.name);
+    
     return Array(count).fill(0).map((_, i) => ({
       id: `remediation-${type}-${i + 1}`,
-      resourceName: type === 'pod' ? pods[i % pods.length]?.name || `pod-name-${i}` : nodes[i % nodes.length]?.name || `node-${i}`,
+      resourceName: resourceNames[i % resourceNames.length] || `${type}-${i}`,
       resourceNamespace: type === 'pod' ? 'default' : '-',
       timestamp: new Date(Date.now() - Math.floor(Math.random() * 86400000 * 7)).toISOString(),
-      status: Math.random() > 0.2 ? 'success' : 'failed' as 'success' | 'failed',
+      status: Math.random() > 0.2 ? 'success' : 'failed' as const,
       issue: i % 3 === 0 ? 'Resource constraint' : i % 2 === 0 ? 'Crash looping' : 'Network connectivity',
       action: i % 3 === 0 ? 'Restarted' : i % 2 === 0 ? 'Scaled resources' : 'Recreated',
     }));
@@ -139,16 +129,13 @@ const Analytics: React.FC = () => {
       setIsRefreshing(true);
       
       const data = await api.fetchPods({
-        limit: 100,  // Get a larger sample for analytics
+        limit: 100,
         timeRange,
       });
       
       setPods(data.data);
-      const total = new Set(data.data.map(item => item.pod));
-      //console.log(data.data[0]);
-      //console.log(total);
-      setPodTotal(total.size);
-      //console.log(data)
+      const uniquePods = new Set(data.data.map(item => item.pod));
+      setPodTotal(uniquePods.size);
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -175,15 +162,12 @@ const Analytics: React.FC = () => {
       setIsRefreshing(true);
       
       const data = await api.fetchNodes({
-        limit: 20,  // Get a larger sample for analytics
+        limit: 20,
         timeRange,
       });
       setNodes(data.data);
-      const total = new Set(data.data.map(item => item.node));
-      console.log(data.data[0]);
-      console.log(total);
-      setNodeTotal(total.size);
-
+      const uniqueNodes = new Set(data.data.map(item => item.node));
+      setNodeTotal(uniqueNodes.size);
       setLastRefreshed(new Date());
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -209,7 +193,21 @@ const Analytics: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData, timeRange, viewType]);
+    
+    // Set up regular refresh interval
+    refreshIntervalRef.current = setInterval(() => {
+      fetchData();
+    }, 5000);
+    
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [fetchData]);
 
   const handleTimeRangeChange = (newTimeRange: TimeRange) => {
     setTimeRange(newTimeRange);
@@ -230,13 +228,8 @@ const Analytics: React.FC = () => {
   const currentItems = viewType === 'pods' ? pods : nodes;
   const currentTotal = viewType === 'pods' ? podTotal : nodeTotal;
   const statusCounts = calculateStatusCounts(currentItems); 
-  //console.log(currentItems[0]);
-  const total = viewType === 'pods' ? podTotal : nodeTotal;
-  const resourceMetrics = calculateResourceMetrics(currentItems, total);
-  //console.log(resourceMetrics);
-  console.log(currentItems);
+  const resourceMetrics = calculateResourceMetrics(currentItems, currentItems.length);
   const timeSeriesData = generateTimeSeriesData(currentItems);
-  console.log(timeSeriesData);
   
   // For remediation metrics, generate mock data  
   const remediationCount = Math.floor(currentItems.length * 0.3);
@@ -245,6 +238,13 @@ const Analytics: React.FC = () => {
     viewType === 'pods' ? 'pod' : 'node', 
     remediationCount
   );
+
+  const transformedData = timeSeriesData ? {
+    timestamps: timeSeriesData.timestamps,
+    cpu: timeSeriesData.cpuUsage,
+    memory: timeSeriesData.memoryUsage,
+    errors: Array(timeSeriesData.timestamps.length).fill(0)
+  } : null;
   
   // Prepare data for pie chart
   const statusData = [
@@ -268,7 +268,7 @@ const Analytics: React.FC = () => {
     
     setIsRemediating(true);
     try {
-      // Mock remediation action - in a real app, this would call an API
+      // Mock remediation action
       await new Promise(resolve => setTimeout(resolve, 1500));
       const success = Math.random() > 0.1;
       
@@ -290,15 +290,14 @@ const Analytics: React.FC = () => {
   };
   
   const downloadCSV = () => {
-    // Create CSV content
-    const headers = 'Resource Type,Total,Good,Warning,Critical,CPU,Memory,Disk,Network IO\n';
+    const headers = 'Resource Type,Total,Good,Alert,Bad,CPU,Memory\n';
     const podsStatusCounts = calculateStatusCounts(pods);
-    const podsMetrics = calculateResourceMetrics(pods, podTotal);
+    const podsMetrics = calculateResourceMetrics(pods, pods.length);
     const nodesStatusCounts = calculateStatusCounts(nodes);
-    const nodesMetrics = calculateResourceMetrics(nodes, nodeTotal);
+    const nodesMetrics = calculateResourceMetrics(nodes, nodes.length);
     
-    const podsRow = `Pods,${podTotal},${podsStatusCounts.good},${podsStatusCounts.alert},${podsStatusCounts.bad},${Math.round(podsMetrics.cpuUsage)}%,${Math.round(podsMetrics.memoryUsage)}%,${Math.round(podsMetrics.diskUsage)}%,${Math.round(podsMetrics.networkIO)}%\n`;
-    const nodesRow = `Nodes,${nodeTotal},${nodesStatusCounts.good},${nodesStatusCounts.alert},${nodesStatusCounts.bad},${Math.round(nodesMetrics.cpuUsage)}%,${Math.round(nodesMetrics.memoryUsage)}%,${Math.round(nodesMetrics.diskUsage)}%,${Math.round(nodesMetrics.networkIO)}%\n`;
+    const podsRow = `Pods,${podTotal},${podsStatusCounts.good},${podsStatusCounts.alert},${podsStatusCounts.bad},${podsMetrics.cpuUsage}%,${podsMetrics.memoryUsage}%\n`;
+    const nodesRow = `Nodes,${nodeTotal},${nodesStatusCounts.good},${nodesStatusCounts.alert},${nodesStatusCounts.bad},${nodesMetrics.cpuUsage}%,${nodesMetrics.memoryUsage}%\n`;
     
     const csvContent = headers + podsRow + nodesRow;
     
@@ -368,8 +367,8 @@ const Analytics: React.FC = () => {
             <StatusSummaryCard 
               title={`${viewType === 'pods' ? 'Pod' : 'Node'} Status`} 
               good={statusCounts.good}
-              alert ={statusCounts.alert}
-              bad ={statusCounts.bad}
+              alert={statusCounts.alert}
+              bad={statusCounts.bad}
               total={currentTotal}
               type={viewType}
             />
@@ -402,15 +401,13 @@ const Analytics: React.FC = () => {
             <KubectlCommandCard resourceType={viewType} count={remediationCount} />
           </div>
           
-          {/* Time Series Charts */}
-          <div className="mb-8">
-            <TimeSeriesChart 
-              title={`${viewType === 'pods' ? 'Pod' : 'Node'} Metrics Over Time`}
-              description="Resource utilization and error trends"
-              data={timeSeriesData}
-              showRestarts={viewType === 'pods'}
-            />
-          </div>
+
+          <TimeSeriesChart 
+            title={`${viewType === 'pods' ? 'Pod' : 'Node'} Metrics Over Time`}
+            description="Resource utilization and error trends"
+            data={transformedData}
+            showRestarts={viewType === 'pods'}
+          />
           
           {/* Analytics Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -495,8 +492,8 @@ const Analytics: React.FC = () => {
               description="AI-based health prediction"
               resourceType={viewType}
               good={statusCounts.good}
-              warning={statusCounts.warning}
-              critical={statusCounts.critical}
+              warning={statusCounts.alert}
+              critical={statusCounts.bad}
             />
           </div>
           
