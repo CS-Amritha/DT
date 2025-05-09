@@ -24,6 +24,7 @@ const NodesPage: React.FC = () => {
   const [isRemediation, setIsRemediation] = useState(false);
   const [remediation, setRemediation] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState(5);
+  const [remediationId, setRemediationId] = useState<string | null>(null);
 
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -58,6 +59,22 @@ const NodesPage: React.FC = () => {
     }
   }, [currentPage, timeRange, pageSize]);
 
+  const handleApplyRemediation = async () => {
+    if (!remediationId) {
+      toast.error("Missing remediation ID.");
+      return;
+    }
+    console.log("Remediation ID:", remediationId);
+    try {
+      await api.applyRemediation(remediationId); 
+      toast.success("Remediation applied successfully");
+      setRemediateModalOpen(false);
+    } catch (error) {
+      console.error("Error applying remediation:", error);
+      toast.error("Failed to apply remediation.");
+    }
+  };
+  
   const handleExplain = async (resourceData: any) => {
     setSelectedNode(resourceData);
     setExplainModalOpen(true);
@@ -81,10 +98,12 @@ const NodesPage: React.FC = () => {
     setRemediateModalOpen(true);
     setIsRemediation(true);
     setRemediation(null);
-
+    setRemediationId(null);
+  
     try {
       const result = await api.remediateNode(resourceData);
       setRemediation(result.remediation);
+      setRemediationId(result.remediation_id); 
     } catch (error) {
       console.error('Error during remediation planning:', error);
       toast.error('Failed to plan remediation');
@@ -174,6 +193,8 @@ const NodesPage: React.FC = () => {
         remediation={remediation}
         isPlanning={isRemediation}
         resourceData={selectedNode}
+        onApply={handleApplyRemediation}
+        remediationId={remediationId}  
       />
     </div>
   );

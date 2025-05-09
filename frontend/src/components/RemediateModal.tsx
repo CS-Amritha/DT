@@ -10,12 +10,15 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
 
+
 interface RemediateModalProps {
   isOpen: boolean;
   onClose: () => void;
   remediation: string | null;
   isPlanning: boolean;
-  resourceData?: any;
+  resourceData: any;
+  onApply: () => void;
+  remediationId: string | null;
 }
 // Utility to clean up excessive newlines
 const cleanMarkdown = (text: string) =>
@@ -27,6 +30,8 @@ const RemediateModal: React.FC<RemediateModalProps> = ({
   remediation,
   isPlanning,
   resourceData,
+  onApply,
+  remediationId, 
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -65,9 +70,14 @@ const RemediateModal: React.FC<RemediateModalProps> = ({
 
         <DialogFooter>
           <Button onClick={onClose}>Close</Button>
+          {!isPlanning && remediation && remediationId && (
+          <Button onClick={onApply} className="bg-green-600 hover:bg-green-700 text-white">
+          Apply Remediation
+          </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+    );
 };
 export default RemediateModal;

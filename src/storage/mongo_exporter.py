@@ -12,3 +12,10 @@ class MongoExporter:
             collection.insert_many(data)
             return f"Saved {len(data)} documents to MongoDB collection '{collection_name}'"
         return "No data to save."
+
+    def update_mongo(self, collection_name, query, update_data):
+        collection = self.db[collection_name]
+        result = collection.update_one(query, {"$set": update_data})
+        if result.matched_count > 0:
+            return "Update successful"
+        return "No matching document found"

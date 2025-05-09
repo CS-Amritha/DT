@@ -21,18 +21,14 @@ export interface FetchParams {
   timeRange?: TimeRange;
 }
 
-// Main API object
+// Define the API object with all your functions
 export const api = {
   /**
    * Fetch paginated Kubernetes pod data with time range filtering
    */
   async fetchPods({ limit = 10, skip = 0, timeRange = "last_5m" }: FetchParams = {}) {
     const response = await axios.get(`${BASE_URL}/dashboard/pods`, {
-      params: {
-        limit,
-        skip,
-        time_range: timeRange,
-      },
+      params: { limit, skip, time_range: timeRange },
     });
     return response.data;
   },
@@ -42,11 +38,7 @@ export const api = {
    */
   async fetchNodes({ limit = 10, skip = 0, timeRange = "last_5m" }: FetchParams = {}) {
     const response = await axios.get(`${BASE_URL}/dashboard/nodes`, {
-      params: {
-        limit,
-        skip,
-        time_range: timeRange,
-      },
+      params: { limit, skip, time_range: timeRange },
     });
     return response.data;
   },
@@ -67,13 +59,30 @@ export const api = {
     return response.data;
   },
 
+  /**
+   * Request remediation plan for a pod
+   */
   async remediatePod(podData: any) {
     const response = await axios.post(`${BASE_URL}/remediate/pod`, podData);
     return response.data;
   },
 
+  /**
+   * Request remediation plan for a node
+   */
   async remediateNode(nodeData: any) {
     const response = await axios.post(`${BASE_URL}/remediate/node`, nodeData);
     return response.data;
   },
+
+  /**
+   * Apply a previously planned remediation by ID
+   */
+  async applyRemediation(remediationId: string) {
+    const response = await axios.post(
+      `${BASE_URL}/remediate/apply_remediation?remediation_id=${remediationId}`
+    );
+    return response.data;
+  },
+
 };

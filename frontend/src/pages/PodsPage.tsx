@@ -20,11 +20,12 @@ const PodsPage: React.FC = () => {
   const [selectedPod, setSelectedPod] = useState<any | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
-  const [pageSize, setPageSize] = useState(5);
   const [remediateModalOpen, setRemediateModalOpen] = useState(false);
   const [isRemediation, setIsRemediation] = useState(false);
-  const [remediation, setRemediation] = useState<string | null>(null); 
-  
+  const [remediation, setRemediation] = useState<string | null>(null);
+  const [remediationId, setRemediationId] = useState<string | null>(null);
+  const [pageSize, setPageSize] = useState(5);
+
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -33,17 +34,17 @@ const PodsPage: React.FC = () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      
+
       abortControllerRef.current = new AbortController();
       setIsLoading(true);
       setIsRefreshing(true);
-      
+
       const data = await api.fetchPods({
         limit: pageSize,
         skip: currentPage * pageSize,
         timeRange,
       });
-      
+
       setPods(data.data);
       setHasMore(data.skip + data.count < data.total);
       setLastRefreshed(new Date());
@@ -58,12 +59,28 @@ const PodsPage: React.FC = () => {
     }
   }, [currentPage, timeRange, pageSize]);
 
+  const handleApplyRemediation = async () => {
+    if (!remediationId) {
+      toast.error("Missing remediation ID.");
+      return;
+    }
+
+    try {
+      await api.applyRemediation(remediationId);
+      toast.success("Remediation applied successfully");
+      setRemediateModalOpen(false);
+    } catch (error) {
+      console.error("Error applying remediation:", error);
+      toast.error("Failed to apply remediation.");
+    }
+  };
+
   const handleExplain = async (resourceData: any) => {
     setSelectedPod(resourceData);
     setExplainModalOpen(true);
     setIsExplaining(true);
     setExplanation(null);
-    
+
     try {
       const result = await api.explainPod(resourceData);
       setExplanation(result.explanation);
@@ -75,15 +92,18 @@ const PodsPage: React.FC = () => {
       setIsExplaining(false);
     }
   };
+
   const handleRemediate = async (resourceData: any) => {
     setSelectedPod(resourceData);
     setRemediateModalOpen(true);
     setIsRemediation(true);
     setRemediation(null);
+    setRemediationId(null);
 
     try {
-      const result = await api.remediatePod(resourceData); 
+      const result = await api.remediatePod(resourceData);
       setRemediation(result.remediation);
+      setRemediationId(result.remediation_id); 
     } catch (error) {
       console.error('Error during remediation planning:', error);
       toast.error('Failed to plan remediation');
@@ -95,26 +115,25 @@ const PodsPage: React.FC = () => {
 
   const handleTimeRangeChange = (newTimeRange: TimeRange) => {
     setTimeRange(newTimeRange);
-    setCurrentPage(0); // Reset to first page when changing time range
+    setCurrentPage(0);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-  
+
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
-    setCurrentPage(0); // Reset to first page when changing page size
+    setCurrentPage(0);
   };
 
   useEffect(() => {
     fetchPods();
-    
-    // Set up regular refresh interval
+
     refreshIntervalRef.current = setInterval(() => {
       fetchPods();
     }, 5000);
-    
+
     return () => {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
@@ -131,16 +150,16 @@ const PodsPage: React.FC = () => {
         <h1 className="text-2xl font-semibold text-gray-800 mb-2">Kubernetes Pods</h1>
         <p className="text-gray-500">Monitor and manage your pods</p>
       </div>
-      
+
       <div className="flex justify-between items-center mb-6">
         <TimeRangeSelector value={timeRange} onChange={handleTimeRangeChange} />
         <RefreshIndicator isRefreshing={isRefreshing} lastRefreshed={lastRefreshed} />
       </div>
-      
+
       {isLoading && pods.length === 0 ? (
         <div className="flex justify-center items-center h-64">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-kubernetes-purple border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-kubernetes-purple border-r-transparent" role="status">
+            <span className="sr-only">Loading...</span>
           </div>
         </div>
       ) : (
@@ -153,7 +172,7 @@ const PodsPage: React.FC = () => {
               onRemediate={handleRemediate}
             />
           </div>
-          
+
           <Pagination
             currentPage={currentPage}
             pageSize={pageSize}
@@ -163,7 +182,7 @@ const PodsPage: React.FC = () => {
           />
         </>
       )}
-      
+
       <ExplainModal
         isOpen={explainModalOpen}
         onClose={() => setExplainModalOpen(false)}
@@ -178,6 +197,8 @@ const PodsPage: React.FC = () => {
         remediation={remediation}
         isPlanning={isRemediation}
         resourceData={selectedPod}
+        onApply={handleApplyRemediation}
+        remediationId={remediationId}  
       />
     </div>
   );
