@@ -9,7 +9,6 @@ import { api, TimeRange } from '@/services/api';
 import { toast } from 'sonner';
 import TimeRangeSelector from '@/components/TimeRangeSelector';
 import RefreshIndicator from '@/components/RefreshIndicator';
-import KubectlCommandCard from '@/components/KubectlCommandCard';
 import StatusSummaryCard from '@/components/StatusSummaryCard';
 import RemediationHistoryTable from '@/components/RemediationHistoryTable';
 import TimeSeriesChart from '@/components/TimeSeriesChart';
@@ -197,7 +196,7 @@ const Analytics: React.FC = () => {
     // Set up regular refresh interval
     refreshIntervalRef.current = setInterval(() => {
       fetchData();
-    }, 5000);
+    }, 120000);
     
     return () => {
       if (refreshIntervalRef.current) {
@@ -363,7 +362,7 @@ const Analytics: React.FC = () => {
       ) : (
         <>
           {/* Resource Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <StatusSummaryCard 
               title={`${viewType === 'pods' ? 'Pod' : 'Node'} Status`} 
               good={statusCounts.good}
@@ -379,27 +378,7 @@ const Analytics: React.FC = () => {
               memoryUsage={resourceMetrics.memoryUsage}
             />
             
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Remediation Actions</CardTitle>
-                <CardDescription>Total remediation attempts</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline justify-between">
-                  <div className="text-3xl font-bold">{remediationCount}</div>
-                  <div className={`text-sm px-2 py-0.5 rounded-full ${
-                    (remediationSuccess / remediationCount) > 0.9 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-amber-100 text-amber-800'
-                  }`}>
-                    {remediationSuccess} successful
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <KubectlCommandCard resourceType={viewType} count={remediationCount} />
-          </div>
+      </div>
           
 
           <TimeSeriesChart 
@@ -410,7 +389,7 @@ const Analytics: React.FC = () => {
           />
           
           {/* Analytics Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -487,14 +466,7 @@ const Analytics: React.FC = () => {
               </CardContent>
             </Card>
 
-            <ModelPredictionCard 
-              title="ML Model Classification"
-              description="AI-based health prediction"
-              resourceType={viewType}
-              good={statusCounts.good}
-              warning={statusCounts.alert}
-              critical={statusCounts.bad}
-            />
+            
           </div>
           
           {/* Remediation History Table */}
