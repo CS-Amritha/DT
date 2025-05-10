@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Layers, Server, Home, Users, Star, BookOpen } from 'lucide-react';
+import { Layers, Server, Home, Users, Star, BookOpen,ChartLine } from 'lucide-react';
 
 const Sidebar = ({ collapsed, setCollapsed }: { collapsed: boolean, setCollapsed: React.Dispatch<React.SetStateAction<boolean>> }) => {
   const location = useLocation();
@@ -10,7 +10,7 @@ const Sidebar = ({ collapsed, setCollapsed }: { collapsed: boolean, setCollapsed
     { name: 'Home', icon: <Home />, path: '/' },
     { name: 'Pods', icon: <Layers />, path: '/pods' },
     { name: 'Nodes', icon: <Server />, path: '/nodes' },
-    { name: 'Analytics', icon: <Server />, path: '/analytics' },
+    { name: 'Analytics', icon: <ChartLine />, path: '/analytics' },
     { name: 'About Us', icon: <Users />, path: '/about' },
     { name: 'Rate Us', icon: <Star />, path: '/rate' },
     { name: 'About Project', icon: <BookOpen />, path: '/about-project' },
