@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import Index from "./pages/Index";
 import NodesPage from "./pages/NodesPage";
@@ -25,6 +24,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/pods" element={<Index />} />
+          
+          {/* Routes with DashboardLayout */}
           <Route path="/nodes" element={
             <DashboardLayout>
               <NodesPage />
@@ -45,7 +46,17 @@ const App = () => (
               <RateUs />
             </DashboardLayout>
           } />
-          <Route path="/about-project/*" element={<AboutProject />} />
+          
+          {/* About-project with DashboardLayout */}
+          <Route path="/about-project" element={
+            <DashboardLayout>
+              <AboutProject />
+            </DashboardLayout>
+          }>
+            <Route index element={<Navigate to="flow-diagram" replace />} />
+            <Route path=":subpage" element={<AboutProject />} />
+          </Route>
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
