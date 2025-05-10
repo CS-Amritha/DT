@@ -40,27 +40,21 @@ const Analytics: React.FC = () => {
 
   // Helper function to calculate status counts
   const calculateStatusCounts = (items: any[], identifierKey: 'pod' | 'node_name' = 'pod') => {
-    // Group items by their identifier (pod or node_name), keeping only the latest entry
     const latestItemsMap = new Map<string, any>();
     
     items.forEach(item => {
         const identifier = item[identifierKey];
-        if (!identifier) return; // skip if identifier is missing
+        if (!identifier) return;
         
         const existingItem = latestItemsMap.get(identifier);
         
-        // Keep the item if:
-        // 1. This identifier isn't in the map yet, OR
-        // 2. The current item has a newer timestamp
         if (!existingItem || (item.timestamp > existingItem.timestamp)) {
             latestItemsMap.set(identifier, item);
         }
     });
     
-    // Convert the map values to an array
     const latestItems = Array.from(latestItemsMap.values());
     
-    // Count each status type
     const counts = {
         good: latestItems.filter(item => item.predicted_label === 'good').length,
         bad: latestItems.filter(item => item.predicted_label === 'bad').length,
@@ -68,7 +62,7 @@ const Analytics: React.FC = () => {
     };
     
     return counts;
-};
+  };
 
   // Calculate resource metrics
   const calculateResourceMetrics = (items: any[], total: number) => {
@@ -77,7 +71,6 @@ const Analytics: React.FC = () => {
     let cpuSum = items.reduce((sum, item) => sum + (item.cpu_usage || 0), 0);
     let memorySum = items.reduce((sum, item) => sum + (item.memory_usage || 0), 0);
 
-    // Calculate averages
     const cpuUsage = Math.round(cpuSum / items.length);
     const memoryUsage = Math.round(memorySum / items.length);
   
@@ -92,11 +85,9 @@ const Analytics: React.FC = () => {
         new Date(now - (points - i - 1) * 3600000).toISOString()
     );
 
-    // Initialize aggregated metrics
     const cpuUsage = Array(points).fill(0);
     const memoryUsage = Array(points).fill(0);
 
-    // Process each item's metrics
     metricsArray.forEach(item => {
         const itemTimestamp = new Date(item.timestamp).getTime();
         const hourIndex = Math.floor((now - itemTimestamp) / 3600000);
@@ -245,7 +236,7 @@ const Analytics: React.FC = () => {
   const resourceMetrics = calculateResourceMetrics(currentItems, currentItems.length);
   const timeSeriesData = generateTimeSeriesData(currentItems);
   
-  // For remediation metrics, generate mock data  
+  // For remediation metrics
   const remediationCount = Math.floor(currentItems.length * 0.3);
   const remediationSuccess = Math.floor(remediationCount * 0.85);
   const remediationHistory = generateRemediationHistory(
@@ -282,7 +273,6 @@ const Analytics: React.FC = () => {
     
     setIsRemediating(true);
     try {
-      // Mock remediation action
       await new Promise(resolve => setTimeout(resolve, 1500));
       const success = Math.random() > 0.1;
       
@@ -292,7 +282,6 @@ const Analytics: React.FC = () => {
         toast.error(`Failed to remediate ${selectedResource.name}`);
       }
       
-      // Refresh data after remediation
       fetchData();
       setRemediationModalOpen(false);
     } catch (error) {
@@ -315,7 +304,6 @@ const Analytics: React.FC = () => {
     
     const csvContent = headers + podsRow + nodesRow;
     
-    // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -392,19 +380,20 @@ const Analytics: React.FC = () => {
               cpuUsage={resourceMetrics.cpuUsage}
               memoryUsage={resourceMetrics.memoryUsage}
             />
-            
-      </div>
-          
+          </div>
 
-          <TimeSeriesChart 
-            title={`${viewType === 'pods' ? 'Pod' : 'Node'} Metrics Over Time`}
-            description="Resource utilization and error trends"
-            data={transformedData}
-            showRestarts={viewType === 'pods'}
-          />
-          
-          {/* Analytics Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* TimeSeriesChart - Full width with proper spacing */}
+          <div className="mb-8">
+            <TimeSeriesChart 
+              title={`${viewType === 'pods' ? 'Pod' : 'Node'} Metrics Over Time`}
+              description="Resource utilization and error trends"
+              data={transformedData}
+              showRestarts={viewType === 'pods'}
+            />
+          </div>
+
+          {/* Analytics Charts - Two column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -479,10 +468,38 @@ const Analytics: React.FC = () => {
                   )}
                 </div>
               </CardContent>
-            </Card> 
+            </Card>
           </div>
         </>
       )}
+
+      {/* Remediation Dialog */}
+      <Dialog open={remediationModalOpen} onOpenChange={setRemediationModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remediate Resource</DialogTitle>
+            <DialogDescription>
+              Confirm remediation action for {selectedResource?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-600 mb-2">
+              <span className="font-medium">Issue detected:</span> {selectedResource?.issue}
+            </p>
+            <p className="text-sm text-gray-600">
+              This action will attempt to automatically resolve the issue.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRemediationModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRemediate} disabled={isRemediating}>
+              {isRemediating ? 'Remediating...' : 'Confirm Remediation'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
