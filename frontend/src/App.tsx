@@ -12,6 +12,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import AboutUs from "./pages/AboutUs";
 import RateUs from "./pages/RateUs";
 import AboutProject from "./pages/AboutProject";
+import Analytics from "./pages/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,11 @@ const App = () => (
           <Route path="/nodes" element={
             <DashboardLayout>
               <NodesPage />
+            </DashboardLayout>
+          } />
+          <Route path="/analytics" element={
+            <DashboardLayout>
+              <Analytics />
             </DashboardLayout>
           } />
           <Route path="/about" element={
