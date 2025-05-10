@@ -479,59 +479,8 @@ const Analytics: React.FC = () => {
                   )}
                 </div>
               </CardContent>
-            </Card>
-
-            
+            </Card> 
           </div>
-          
-          {/* Remediation History Table */}
-          <RemediationHistoryTable 
-            data={remediationHistory} 
-            resourceType={viewType}
-            onRemediate={openRemediationModal}
-          />
-          
-          {/* Remediation Modal */}
-          <Dialog open={remediationModalOpen} onOpenChange={setRemediationModalOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Remediate {selectedResource?.name}</DialogTitle>
-                <DialogDescription>
-                  The following issue was detected with this resource
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="py-4">
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium mb-1">Detected Issue:</h4>
-                  <p className="text-sm text-muted-foreground">{selectedResource?.issue || 'Resource constraint detected'}</p>
-                </div>
-                
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium mb-1">Recommended Action:</h4>
-                  <p className="text-sm text-muted-foreground">Restart the {viewType === 'pods' ? 'pod' : 'node'} to clear transient issues</p>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Kubectl Command:</h4>
-                  <div className="bg-gray-100 p-2 rounded text-xs font-mono">
-                    kubectl {viewType === 'pods' ? 'delete pod' : 'cordon'} {selectedResource?.name} {viewType === 'pods' ? '' : '&& kubectl drain ' + selectedResource?.name}
-                  </div>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setRemediationModalOpen(false)}>Cancel</Button>
-                <Button 
-                  onClick={handleRemediate} 
-                  disabled={isRemediating}
-                  className={isRemediating ? 'opacity-50 cursor-not-allowed' : ''}
-                >
-                  {isRemediating ? 'Remediating...' : 'Apply Remediation'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </>
       )}
     </div>
