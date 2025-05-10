@@ -180,7 +180,7 @@ const Analytics: React.FC = () => {
         timeRange,
       });
       setNodes(data.data);
-      const uniqueNodes = new Set(data.data.map(item => item.node));
+      const uniqueNodes = new Set(data.data.map(item => item.node_name));
       setNodeTotal(uniqueNodes.size);
       setLastRefreshed(new Date());
     } catch (error) {
