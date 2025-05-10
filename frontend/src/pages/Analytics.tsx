@@ -39,21 +39,36 @@ const Analytics: React.FC = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Helper function to calculate status counts
-  const calculateStatusCounts = (items: any[]) => {
-    const good = items.filter(item => 
-      (item.predicted_label === 'good')
-    ).length;
+  const calculateStatusCounts = (items: any[], identifierKey: 'pod' | 'node_name' = 'pod') => {
+    // Group items by their identifier (pod or node_name), keeping only the latest entry
+    const latestItemsMap = new Map<string, any>();
     
-    const bad = items.filter(item => 
-      (item.predicted_label === 'bad')
-    ).length;
+    items.forEach(item => {
+        const identifier = item[identifierKey];
+        if (!identifier) return; // skip if identifier is missing
+        
+        const existingItem = latestItemsMap.get(identifier);
+        
+        // Keep the item if:
+        // 1. This identifier isn't in the map yet, OR
+        // 2. The current item has a newer timestamp
+        if (!existingItem || (item.timestamp > existingItem.timestamp)) {
+            latestItemsMap.set(identifier, item);
+        }
+    });
     
-    const alert = items.filter(item => 
-      (item.predicted_label === 'alert')
-    ).length;
+    // Convert the map values to an array
+    const latestItems = Array.from(latestItemsMap.values());
     
-    return { good, bad, alert };
-  };
+    // Count each status type
+    const counts = {
+        good: latestItems.filter(item => item.predicted_label === 'good').length,
+        bad: latestItems.filter(item => item.predicted_label === 'bad').length,
+        alert: latestItems.filter(item => item.predicted_label === 'alert').length
+    };
+    
+    return counts;
+};
 
   // Calculate resource metrics
   const calculateResourceMetrics = (items: any[], total: number) => {
@@ -226,7 +241,7 @@ const Analytics: React.FC = () => {
   // Get current data based on view type
   const currentItems = viewType === 'pods' ? pods : nodes;
   const currentTotal = viewType === 'pods' ? podTotal : nodeTotal;
-  const statusCounts = calculateStatusCounts(currentItems); 
+  const statusCounts = viewType === 'pods' ? calculateStatusCounts(currentItems, 'pod') : calculateStatusCounts(currentItems, 'node_name'); 
   const resourceMetrics = calculateResourceMetrics(currentItems, currentItems.length);
   const timeSeriesData = generateTimeSeriesData(currentItems);
   
@@ -290,9 +305,9 @@ const Analytics: React.FC = () => {
   
   const downloadCSV = () => {
     const headers = 'Resource Type,Total,Good,Alert,Bad,CPU,Memory\n';
-    const podsStatusCounts = calculateStatusCounts(pods);
+    const podsStatusCounts = calculateStatusCounts(pods, 'pod');
     const podsMetrics = calculateResourceMetrics(pods, pods.length);
-    const nodesStatusCounts = calculateStatusCounts(nodes);
+    const nodesStatusCounts = calculateStatusCounts(nodes, 'node_name');
     const nodesMetrics = calculateResourceMetrics(nodes, nodes.length);
     
     const podsRow = `Pods,${podTotal},${podsStatusCounts.good},${podsStatusCounts.alert},${podsStatusCounts.bad},${podsMetrics.cpuUsage}%,${podsMetrics.memoryUsage}%\n`;
