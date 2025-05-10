@@ -2,34 +2,26 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useParams } from 'react-router-dom';
 import { BookOpen, Activity, Database, Layers } from 'lucide-react';
-import FlowDiagramPage from './aboutProject/FlowDiagramPage';
 import ArchitecturePage from './aboutProject/ArchitecturePage';
 import DataCollectionPage from './aboutProject/DataCollectionPage';
-import ModelBuildingPage from './aboutProject/ModelBuildingPage';
 
 const AboutProjectContent = () => {
   const { subpage } = useParams<{ subpage: string }>();
   const navigate = useNavigate();
 
   const subpages = [
-    { id: 'flow-diagram', name: 'Flow Diagram', icon: <Activity className="w-4 h-4 mr-2" /> },
     { id: 'architecture', name: 'Architecture', icon: <Layers className="w-4 h-4 mr-2" /> },
     { id: 'data-collection', name: 'Data Collection', icon: <Database className="w-4 h-4 mr-2" /> },
-    { id: 'model-building', name: 'Model Building', icon: <BookOpen className="w-4 h-4 mr-2" /> }
   ];
 
   const renderContent = () => {
     switch (subpage) {
-      case 'flow-diagram':
-        return <FlowDiagramPage />;
       case 'architecture':
         return <ArchitecturePage />;
       case 'data-collection':
         return <DataCollectionPage />;
-      case 'model-building':
-        return <ModelBuildingPage />;
       default:
-        return <FlowDiagramPage />; // fallback/default
+        return <ArchitecturePage />; // fallback/default
     }
   };
 
